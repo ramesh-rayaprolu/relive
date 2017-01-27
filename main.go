@@ -13,7 +13,7 @@ import (
 func main() {
 	var metaURL string
 	var dbTimeout time.Duration
-	flag.StringVar(&metaURL, "metaurl", "root:@tcp(127.0.0.1:9306)/relive?parseTime=true&interpolateParams=true", "URL of the metadata service")
+	flag.StringVar(&metaURL, "metaurl", "root:@tcp(127.0.0.1:3306)/relive?parseTime=true&interpolateParams=true", "URL of the metadata service")
 	flag.DurationVar(&dbTimeout, "dbtimeout", 10*time.Second, "timeout for DB queries")
 	flag.Parse()
 
