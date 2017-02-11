@@ -15,10 +15,12 @@ var TableCreateSQL = []string{
 	`CREATE TABLE IF NOT EXISTS Account (
 		  ID int(11) NOT NULL AUTO_INCREMENT,
 		  PID int(11) NOT NULL,
+          UserName VARCHAR(100) NOT NULL,
 		  FirstName varchar(100) NOT NULL,
 		  LastName varchar(100) DEFAULT NULL,
 		  EmailID varchar(100) NOT NULL,
-		  PasswdDigest varchar(32) NOT NULL,
+		  PasswdDigest varchar(512) NOT NULL,
+          Salt VARCHAR(128) NOT NULL,
 		  Role tinyint NOT NULL,
 		  PRIMARY KEY (ID)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;`,

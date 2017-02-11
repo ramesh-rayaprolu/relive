@@ -127,7 +127,7 @@ func (d *Config) createDataBase() error {
 		if strings.Contains(stmt, "CREATE DATABASE") {
 			db, err := sql.Open("mysql", baseMetaURL)
 			if err != nil {
-				return fmt.Errorf("could not connect to memsql using %s %s", baseMetaURL, err.Error())
+				return fmt.Errorf("could not connect to sql DB using %s %s", baseMetaURL, err.Error())
 			}
 			_, err = db.Exec(stmt)
 			if err != nil {

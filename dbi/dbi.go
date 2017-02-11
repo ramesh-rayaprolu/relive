@@ -23,7 +23,7 @@ var once sync.Once
 // InitializeDBI - init
 func InitializeDBI(svcAddr string, dbTimeout time.Duration) (DBI, error) {
 	once.Do(func() {
-		sqlDBI, sqlErr := NewMemSQLDBI(svcAddr, dbTimeout)
+		sqlDBI, sqlErr := NewSQLDBI(svcAddr, dbTimeout)
 		if sqlErr != nil {
 			return
 		}
