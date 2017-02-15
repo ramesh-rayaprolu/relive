@@ -2,6 +2,7 @@ package api
 
 import (
 	"../dbi"
+	"../logger"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,6 +15,7 @@ type Router struct {
 	Payment      http.Handler
 	Media        http.Handler
 	AccountDBI   dbi.AccountTblDBI
+	LogObj       *logger.Logger
 }
 
 func (r Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -34,6 +36,8 @@ func (r Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	url := req.URL.String()
+
+	r.LogObj.PrintInfo("request URL: %s", url)
 
 	if strings.Contains(url, "/accounts/") || strings.Contains(url, "/accounts?") {
 		r.Account.ServeHTTP(w, req)

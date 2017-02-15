@@ -2,6 +2,7 @@ package dbi
 
 import (
 	"../dbmodel"
+	"../logger"
 	"../util"
 	"crypto/md5"
 	"database/sql"
@@ -23,10 +24,11 @@ type SQLDBI struct {
 	accessStr string
 	db        SQLIF
 	timeout   time.Duration
+	logObj    *logger.Logger
 }
 
 // NewSQLDBI - testing
-func NewSQLDBI(dsn string, timeout time.Duration) (sqlDBI *SQLDBI, err error) {
+func NewSQLDBI(dsn string, timeout time.Duration, logObj *logger.Logger) (sqlDBI *SQLDBI, err error) {
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -37,6 +39,7 @@ func NewSQLDBI(dsn string, timeout time.Duration) (sqlDBI *SQLDBI, err error) {
 		accessStr: dsn,
 		timeout:   timeout,
 		db:        db,
+		logObj:    logObj,
 	}
 	return //
 }
@@ -51,6 +54,7 @@ func (sqlDbi *SQLDBI) CheckAccountExists(userName string) (bool, error) {
 
 	rows, err = sqlDbi.db.Query(IsAccountExistQuery, userName)
 	if err != nil {
+		sqlDbi.logObj.PrintError("Failed querying accounts %v", err)
 		return false, fmt.Errorf("Failed querying accounts %v", err)
 	}
 	defer rows.Close()
@@ -90,6 +94,7 @@ func (sqlDbi *SQLDBI) CheckAccountTableExists() (bool, error) {
 	if rows.Next() {
 		err = rows.Scan(&tName)
 		if err != nil {
+			sqlDbi.logObj.PrintError("CheckAccountTableExists returns DB scan error: %s", err.Error())
 			fmt.Printf("CheckAccountTableExists returns DB scan error: %s\n", err.Error())
 			return false, err
 		}
@@ -122,6 +127,7 @@ func (sqlDbi *SQLDBI) CreateAccount(req util.CreateAccountReq) error {
 
 	_, err = sqlDbi.db.Exec(query, args...)
 	if err != nil {
+		sqlDbi.logObj.PrintError("Failed to create account: %s", err.Error())
 		return fmt.Errorf("Failed to create the account %v", err)
 	}
 

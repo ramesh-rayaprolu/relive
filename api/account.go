@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"../dbi"
+	"../logger"
 	"../util"
 )
 
@@ -14,6 +15,7 @@ import (
 type AccountsAPI struct {
 	AccountDBI      dbi.AccountTblDBI
 	SubscriptionDBI dbi.SubscriptionTblDBI
+	LogObj          *logger.Logger
 }
 
 //InitAccountsDB - create root user if it doesnt exist

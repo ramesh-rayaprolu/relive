@@ -39,7 +39,7 @@ func main() {
 	}
 	/* end of DBInit */
 
-	sqlDbi, err := dbi.InitializeDBI(metaURL, dbTimeout)
+	sqlDbi, err := dbi.InitializeDBI(metaURL, dbTimeout, logObj)
 
 	if err != nil {
 		logObj.PrintError("Could not initialize the SQL Dbi %s error %s", metaURL, err.Error())
@@ -56,19 +56,23 @@ func main() {
 	accountAPI := api.AccountsAPI{
 		AccountDBI:      sqlDbi.AccountDBI,
 		SubscriptionDBI: sqlDbi.SubscriptionDBI,
+		LogObj:          logObj,
 	}
 
 	subscriptionAPI := api.SubscriptionAPI{
 		SubscriptionDBI:        sqlDbi.SubscriptionDBI,
 		SubscriptionAccountDBI: sqlDbi.SubscriptionAccountDBI,
 		ProductDBI:             sqlDbi.ProductDBI,
+		LogObj:                 logObj,
 	}
 	paymentAPI := api.PaymentAPI{
 		PaymentDBI:        sqlDbi.PaymentDBI,
 		PaymentHistoryDBI: sqlDbi.PaymentHistoryDBI,
+		LogObj:            logObj,
 	}
 	mediaAPI := api.MediaAPI{
 		MediaDBI: sqlDbi.MediaTypeDBI,
+		LogObj:   logObj,
 	}
 
 	router := api.Router{
@@ -77,6 +81,7 @@ func main() {
 		Payment:      paymentAPI,
 		Media:        mediaAPI,
 		AccountDBI:   sqlDbi.AccountDBI,
+		LogObj:       logObj,
 	}
 
 	routerSSL := api.RouterSSL{
@@ -84,6 +89,7 @@ func main() {
 		Subscription: subscriptionAPI,
 		Payment:      paymentAPI,
 		Media:        mediaAPI,
+		LogObj:       logObj,
 	}
 
 	logObj.PrintInfo("Listening on (HTTP) : %s\n", listen)
@@ -114,24 +120,6 @@ func main() {
 		logObj.PrintError("error Listening : %v", err)
 		os.Exit(1)
 	}
-
-	/*accountLoader := sqlDbi.AccountDBI
-
-	acEntry := &dbmodel.AccountEntry{
-		ID:           1,
-		PID:          11,
-		FirstName:    "Pratibha",
-		LastName:     "Revankar",
-		EmailID:      "pratirvce@gmail.com",
-		PasswdDigest: "pratirvce",
-		Role:         0,
-	}
-
-	err = accountLoader.AddAccounts(acEntry)
-
-	if err != nil {
-		logObj.PrintError("error executing DB: %v", err)
-	}*/
 }
 
 // VersionHandler will print the generated build info when /version is requested.

@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"../dbi"
+	"../logger"
 )
 
 // SubscriptionAPI struct
@@ -13,6 +14,7 @@ type SubscriptionAPI struct {
 	SubscriptionDBI        dbi.SubscriptionTblDBI
 	SubscriptionAccountDBI dbi.SubscriptionAccountTblDBI
 	ProductDBI             dbi.ProductTblDBI
+	LogObj                 *logger.Logger
 }
 
 //	/api/subscription/search

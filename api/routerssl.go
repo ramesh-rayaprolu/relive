@@ -2,6 +2,7 @@ package api
 
 import (
 	"../dbi"
+	"../logger"
 	"encoding/base64"
 	"fmt"
 	"net/http"
@@ -15,6 +16,7 @@ type RouterSSL struct {
 	Payment      http.Handler
 	Media        http.Handler
 	AccountsDBI  dbi.AccountTblDBI
+	LogObj       *logger.Logger
 }
 
 func (r RouterSSL) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -36,30 +38,20 @@ func (r RouterSSL) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	url := req.URL.String()
 
+	r.LogObj.PrintInfo("request URL: %s", url)
+
 	if strings.Contains(url, "/accounts/login") || strings.Contains(url, "/accounts/register") {
 		r.Account.ServeHTTP(w, req)
 		return
 	}
 
 	/* Authenticate */
-	_, err := authenticate(r.AccountsDBI, w, req)
+	_, err := authenticate(r.LogObj, r.AccountsDBI, w, req)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	/*if role < 1 && (strings.Contains(url, "/accounts/search") || strings.Contains(url, "/recordings/update") ||
-		strings.Contains(url, "/recordings/delete") || strings.Contains(url, "/streams/configure") ||
-		strings.Contains(url, "/streams/create") || strings.Contains(url, "/streams/update") ||
-		strings.Contains(url, "/streams/streamstate") || strings.Contains(url, "/streams/delete")) {
-		http.Error(w, "Insufficient role privilege!", http.StatusForbidden)
-		return
-	} else if role < 2 && (strings.Contains(url, "/accounts/create") || strings.Contains(url, "/accounts/update") ||
-		strings.Contains(url, "/accounts/delete") || strings.Contains(url, "/accounts/activate") ||
-		strings.Contains(url, "/accounts/disable")) {
-		http.Error(w, "Insufficient role privilege!", http.StatusForbidden)
-		return
-	} else */
 	if strings.Contains(url, "/accounts/") || strings.Contains(url, "/accounts?") {
 		r.Account.ServeHTTP(w, req)
 		return
@@ -77,7 +69,7 @@ func (r RouterSSL) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	http.Error(w, fmt.Sprintf("Invalid Request made. %s is not an active endpoint.", url), http.StatusMethodNotAllowed)
 }
 
-func authenticate(accountDBI dbi.AccountTblDBI, w http.ResponseWriter, r *http.Request) (int, error) {
+func authenticate(logObj *logger.Logger, accountDBI dbi.AccountTblDBI, w http.ResponseWriter, r *http.Request) (int, error) {
 	authData := r.Header.Get("Authorization")
 	if authData == "" {
 		return 0, fmt.Errorf("authorization header is empty")

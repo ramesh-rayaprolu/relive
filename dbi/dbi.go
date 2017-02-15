@@ -1,6 +1,7 @@
 package dbi
 
 import (
+	"../logger"
 	"fmt"
 	"sync"
 	"time"
@@ -21,9 +22,9 @@ var dbi *DBI
 var once sync.Once
 
 // InitializeDBI - init
-func InitializeDBI(svcAddr string, dbTimeout time.Duration) (DBI, error) {
+func InitializeDBI(svcAddr string, dbTimeout time.Duration, logObj *logger.Logger) (DBI, error) {
 	once.Do(func() {
-		sqlDBI, sqlErr := NewSQLDBI(svcAddr, dbTimeout)
+		sqlDBI, sqlErr := NewSQLDBI(svcAddr, dbTimeout, logObj)
 		if sqlErr != nil {
 			return
 		}

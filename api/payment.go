@@ -6,12 +6,14 @@ import (
 	"regexp"
 
 	"../dbi"
+	"../logger"
 )
 
 // PaymentAPI struct
 type PaymentAPI struct {
 	PaymentDBI        dbi.PaymentTblDBI
 	PaymentHistoryDBI dbi.PaymentHistoryTblDBI
+	LogObj            *logger.Logger
 }
 
 //	/api/payment/search

@@ -6,11 +6,13 @@ import (
 	"regexp"
 
 	"../dbi"
+	"../logger"
 )
 
 // MediaAPI struct
 type MediaAPI struct {
 	MediaDBI dbi.MediaTypeTblDBI
+	LogObj   *logger.Logger
 }
 
 //	/api/media/search
