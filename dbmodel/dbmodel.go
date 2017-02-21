@@ -30,13 +30,14 @@ type (
 
 	// SubscriptionEntry - testing
 	SubscriptionEntry struct {
-		ID             int
-		ProductID      int
-		ProductType    string
-		StoreLocation  string
-		StartDate      string
-		EndDate        string
-		NumberOfAdmins int
+		ID               int
+		ProductID        int
+		SubscriptionCode int
+		ProductType      string
+		StoreLocation    string
+		StartDate        string
+		EndDate          string
+		NumberOfAdmins   int
 	}
 
 	// SubscriptionAccountEntry - testing

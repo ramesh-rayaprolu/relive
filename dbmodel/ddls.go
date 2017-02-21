@@ -53,11 +53,13 @@ var TableCreateSQL = []string{
 	`CREATE TABLE IF NOT EXISTS Subscription (
 		  ID int(11) NOT NULL,
 		  ProductID int(11) NOT NULL,
+		  SubscriptionCode int(11) NOT NULL AUTO_INCREMENT,
 		  ProductType varchar(100) NOT NULL,
 		  StoreLocation varchar(100) NOT NULL,
 		  StartDate TIMESTAMP DEFAULT '1970-01-01 00:00:01',
 		  EndDate TIMESTAMP DEFAULT '1970-01-01 00:00:01',
 		  NumberOfAdmins int(11) NOT NULL,
+		  PRIMARY KEY (SubscriptionCode),
 		  CONSTRAINT Subscription_ibfk_1 FOREIGN KEY (ID) REFERENCES Account (ID) ON DELETE CASCADE ON UPDATE CASCADE,
 		  CONSTRAINT Subscription_ibfk_2 FOREIGN KEY (ProductID) REFERENCES Product (ProductID) ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;`,
