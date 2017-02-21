@@ -280,8 +280,8 @@ func (sqlDbi *SQLDBI) AddPaymentHistory(pyhDetails *dbmodel.PaymentHistoryEntry)
 	return nil
 }
 
-// AddSubscription - testing
-func (sqlDbi *SQLDBI) AddSubscription(subDetails *dbmodel.SubscriptionEntry) (err error) {
+// CreateSubscription - testing
+func (sqlDbi *SQLDBI) CreateSubscription(req util.CreateSubscriptionReq) (err error) {
 
 	const sqlInsertSubscriptionQry = `INSERT INTO Subscription (ID, ProductID, ProductType, StoreLocation, StartDate, EndDate, NumberOfAdmins) VALUES `
 
@@ -289,7 +289,7 @@ func (sqlDbi *SQLDBI) AddSubscription(subDetails *dbmodel.SubscriptionEntry) (er
 	args := []interface{}{}
 
 	query += "(?, ?, ?, ?, ?, ?, ?)"
-	args = append(args, subDetails.ID, subDetails.ProductID, subDetails.ProductType, subDetails.StoreLocation, subDetails.StartDate, subDetails.EndDate, subDetails.NumberOfAdmins)
+	args = append(args, req.ID, req.ProductID, req.ProductType, req.StoreLocation, req.StartDate, req.EndDate, req.NumberOfAdmins)
 	//query += sqlUpdateAccountQry
 
 	_, err = sqlDbi.db.Exec(query, args...)

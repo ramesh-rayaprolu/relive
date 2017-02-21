@@ -16,3 +16,15 @@ type LoginReq struct {
 	UserName string
 	PWD      string
 }
+
+// CreateSubscriptionReq - used to create subscription
+type CreateSubscriptionReq struct {
+	ID               uint32
+	ProductID        uint32
+	SubscriptionCode uint32
+	ProductType      string
+	StoreLocation    string
+	StartDate        string
+	EndDate          string
+	NumberOfAdmins   uint32
+}
