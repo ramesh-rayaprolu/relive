@@ -78,14 +78,10 @@ func handleSubscriptionUpdate(api SubscriptionAPI, args []string, w http.Respons
 		return fmt.Errorf("Error decoding the request: %s", err.Error())
 	}
 
-	fmt.Println("\nSubscriptionCode and NumberOfAdmins: ", req.SubscriptionCode, req.NumberOfAdmins)
-
 	if req.SubscriptionCode == 0 || req.NumberOfAdmins == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return fmt.Errorf("required parameters NOT specified in update request")
 	}
-
-	fmt.Println("\nAfter the check")
 
 	err := api.SubscriptionDBI.UpdateSubscription(req)
 	if err != nil {
@@ -106,6 +102,27 @@ func handleSubscriptionDelete(api SubscriptionAPI, args []string, w http.Respons
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return fmt.Errorf("Incorrect Method used for API /api/subscription/delete")
 	}
+
+	// decode the JSON against the structure
+	var req util.CreateSubscriptionReq
+	d := json.NewDecoder(r.Body)
+	if err := d.Decode(&req); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return fmt.Errorf("Error decoding the request: %s", err.Error())
+	}
+
+	if req.SubscriptionCode == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return fmt.Errorf("required parameters NOT specified in delete request")
+	}
+
+	err := api.SubscriptionDBI.DeleteSubscription(req.SubscriptionCode)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 
 	return nil
 }

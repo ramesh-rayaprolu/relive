@@ -308,10 +308,19 @@ func (sqlDbi *SQLDBI) UpdateSubscription(req util.CreateSubscriptionReq) (err er
 	args := []interface{}{}
 	args = append(args, req.NumberOfAdmins, req.SubscriptionCode)
 
-	fmt.Println("sqlUpdateSubscriptionQry: ", sqlUpdateSubscriptionQry)
-	fmt.Println("args: ", args)
-
 	_, err = sqlDbi.db.Exec(sqlUpdateSubscriptionQry, args...)
+
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (sqlDbi *SQLDBI) DeleteSubscription(subscriptionCode uint32) (err error) {
+	const deleteSubscriptionQry = `DELETE FROM Subscription WHERE SubscriptionCode = ?`
+
+	_, err = sqlDbi.db.Exec(deleteSubscriptionQry, subscriptionCode)
 
 	if err != nil {
 		return err
