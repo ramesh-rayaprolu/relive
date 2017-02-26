@@ -300,6 +300,26 @@ func (sqlDbi *SQLDBI) CreateSubscription(req util.CreateSubscriptionReq) (err er
 	return nil
 }
 
+// UpdateSubscription -- update NumberOfAdmins by SubscriptionCode
+func (sqlDbi *SQLDBI) UpdateSubscription(req util.CreateSubscriptionReq) (err error) {
+
+	const sqlUpdateSubscriptionQry = `UPDATE Subscription set NumberOfAdmins = ? where SubscriptionCode = ? `
+
+	args := []interface{}{}
+	args = append(args, req.NumberOfAdmins, req.SubscriptionCode)
+
+	fmt.Println("sqlUpdateSubscriptionQry: ", sqlUpdateSubscriptionQry)
+	fmt.Println("args: ", args)
+
+	_, err = sqlDbi.db.Exec(sqlUpdateSubscriptionQry, args...)
+
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
 // AddSubscriptionAccount - testing
 func (sqlDbi *SQLDBI) AddSubscriptionAccount(subacDetails *dbmodel.SubscriptionAccountEntry) (err error) {
 

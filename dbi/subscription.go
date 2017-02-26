@@ -8,4 +8,5 @@ import (
 // SubscriptionTblDBI - testing
 type SubscriptionTblDBI interface {
 	CreateSubscription(req util.CreateSubscriptionReq) error
+	UpdateSubscription(req util.CreateSubscriptionReq) error
 }
