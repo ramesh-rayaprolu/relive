@@ -19,6 +19,9 @@ type AccountTblDBI interface {
 	// CreateAccount - test
 	CreateAccount(req util.CreateAccountReq) error
 
+	// SearchAccount - test
+	SearchAccount(UserName string) (util.SearchAccountReq, error)
+
 	// AddAccounts - testing
 	AddAccounts(acDetails *dbmodel.AccountEntry) error
 }
