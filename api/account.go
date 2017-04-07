@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 
 	"github.com/msproject/relive/dbi"
@@ -60,10 +61,40 @@ func InitAccountsDB(sqlDBI dbi.DBI) (err error) {
 	return nil
 }
 
-//	/api/accounts/search
+//	/api/accounts/search  updated
+//func handleAccountsSearch(UserName string) error {
 func handleAccountsSearch(api AccountsAPI, args []string, w http.ResponseWriter, r *http.Request) error {
-	/* anything after /api/accounts/search/ will be in args, split by '/' */
-	fmt.Println(args)
+	var username string
+	var req util.SearchAccountReq
+	if r.Method != "GET" {
+		w.Header().Set("Allow", "GET")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return fmt.Errorf("Incorrect Method used for API /api/accounts/Search")
+	}
+
+	URLSuffix := args[0]
+	parsedURLSuffix, err := url.Parse(URLSuffix)
+	params := parsedURLSuffix.Query()
+
+	if len(params["user"]) > 0 {
+		username = params["user"][0]
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		return fmt.Errorf("required query parameters NOT specified in search request")
+	}
+
+	req, err = api.AccountDBI.SearchAccount(username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+
+	w.WriteHeader(http.StatusOK)
+	err = writeResponse(req, w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return err
+	}
 	return nil
 }
 
@@ -105,6 +136,7 @@ func handleAccountsCreate(api AccountsAPI, args []string, w http.ResponseWriter,
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+	//fmt.Println("Inside search")
 	return nil
 }
 
@@ -188,7 +220,7 @@ var account []accountT
 
 func init() {
 	var regex string
-	regex = "/api/accounts/search$"
+	regex = "/api/accounts/search\\?([^/]+)$"
 	account = append(account,
 		accountT{
 			regex: regex,
