@@ -369,6 +369,44 @@ func (sqlDbi *SQLDBI) AddProduct(prDetails *dbmodel.ProductEntry) (err error) {
 	return nil
 }
 
+// SearchAccount - function to Search an account row.
+//                 Duplicate rows are not allowed and will throw error
+func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, error) {
+	const SearchAccountQuery = `SELECT UserName, EmailID, FirstName, LastName, Role FROM Account WHERE UserName = ?`
+	var req util.SearchAccountReq
+
+	// Get passwordDigest and salt here
+	//passwordDigest, salt := saltedHash(req.PWD)
+
+	query := SearchAccountQuery
+	args := []interface{}{}
+
+	args = append(args, UserName)
+
+	rows, err := sqlDbi.db.Query(query, args...)
+	if err != nil {
+		sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
+		return req, fmt.Errorf("Failed to Search the account %v", err)
+	}
+
+	defer rows.Close()
+	i := 0
+	for rows.Next() {
+		if i >= 1 {
+			sqlDbi.logObj.PrintError("Found more than one entry for user: %s", UserName)
+			return req, fmt.Errorf("Found more than one entry for user: %s", UserName)
+		}
+		err := rows.Scan(&req.UserName, &req.Email, &req.FirstName, &req.LastName, &req.Role)
+		if err != nil {
+			sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
+			return req, fmt.Errorf("Failed to Search the account %v", err)
+		}
+		i++
+	}
+
+	return req, nil
+}
+
 // AddMediaType - testing
 func (sqlDbi *SQLDBI) AddMediaType(mtDetails *dbmodel.MediaTypeEntry) (err error) {
 
