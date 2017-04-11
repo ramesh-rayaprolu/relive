@@ -3,6 +3,7 @@ package dbi
 import (
 	"crypto/md5"
 	"database/sql"
+	//	"encoding/json"
 	"fmt"
 	"github.com/msproject/relive/dbmodel"
 	"github.com/msproject/relive/logger"
@@ -317,6 +318,7 @@ func (sqlDbi *SQLDBI) UpdateSubscription(req util.CreateSubscriptionReq) (err er
 
 }
 
+//DeleteSubscription
 func (sqlDbi *SQLDBI) DeleteSubscription(subscriptionCode uint32) (err error) {
 	const deleteSubscriptionQry = `DELETE FROM Subscription WHERE SubscriptionCode = ?`
 
@@ -326,6 +328,41 @@ func (sqlDbi *SQLDBI) DeleteSubscription(subscriptionCode uint32) (err error) {
 		return err
 	}
 	return nil
+
+}
+
+//SearchSubscription
+func (sqlDbi *SQLDBI) SearchSubscription(subscriptionCode uint32) (subs []util.SubscrDetails, err error) {
+	const SearchSubscriptionQry = `SELECT ID, ProductID, SubscriptionCode, ProductType FROM Subscription WHERE SubscriptionCode = ?`
+
+	fmt.Println(subscriptionCode)
+	//Result result
+	//result, err := sqlDbi.db.Exec(SearchSubscriptionQry, subscriptionCode)
+	rows, err := sqlDbi.db.Query(SearchSubscriptionQry, subscriptionCode)
+
+	if err != nil {
+		return subs, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var sub util.SubscrDetails
+
+		//fmt.Println(sub.productType)
+		//if err := rows.Scan(&ProductType); err != nil {
+		//		fmt.Println("Error")
+		//	}
+
+		if err := rows.Scan(&sub.ID, &sub.ProductID, &sub.SubscrCode, &sub.ProductType); err != nil {
+			fmt.Println("Error in scanning")
+		}
+
+		//fmt.Println(rows)
+		fmt.Println("sub.ProductType: ", sub.ProductType)
+
+		subs = append(subs, sub)
+	}
+	return subs, nil
 
 }
 

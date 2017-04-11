@@ -10,4 +10,5 @@ type SubscriptionTblDBI interface {
 	CreateSubscription(req util.CreateSubscriptionReq) error
 	UpdateSubscription(req util.CreateSubscriptionReq) error
 	DeleteSubscription(subscriptionCode uint32) error
+	SearchSubscription(subscriptionCode uint32) ([]util.SubscrDetails, error)
 }
