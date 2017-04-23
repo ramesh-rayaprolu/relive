@@ -47,3 +47,11 @@ type SubscrDetails struct {
 	SubscrCode  int
 	ProductType string
 }
+
+type PaymentDetails struct {
+	ID             int
+	CCNumber       string
+	BillingAddress string
+	CCExpiry       string
+	CVVCode        int
+}
