@@ -1,0 +1,7 @@
+TODO for 04/25/2017:
+
+- Add default products when relive comes up (as part of DB intialization)
+- DDLs, amount field in Product should be float
+- ProductID can be a string
+- add create/update datestamp in account table
+- delete and de-activate account APIs
