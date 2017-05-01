@@ -397,3 +397,66 @@ func (sqlDbi *SQLDBI) AddMediaType(mtDetails *dbmodel.MediaTypeEntry) (err error
 	}
 	return nil
 }
+
+//CheckProductTableExists - check if product table exists
+func (sqlDbi *SQLDBI) CheckProductTableExists() (bool, error) {
+	const checkTblQuery = `SHOW TABLES LIKE 'Product'`
+
+	query := checkTblQuery
+	args := []interface{}{}
+
+	rows, err := sqlDbi.db.Query(query, args...)
+	if err != nil {
+		return false, err
+	}
+
+	defer rows.Close()
+
+	var tName []uint8
+	if rows.Next() {
+		err = rows.Scan(&tName)
+		if err != nil {
+			sqlDbi.logObj.PrintError("CheckProductTableExists returns DB scan error: %s", err.Error())
+			fmt.Printf("CheckProductTableExists returns DB scan error: %s\n", err.Error())
+			return false, err
+		}
+	}
+
+	/* if there exists a table, tName will have it, else Account table does
+	 * not exist */
+	if tName != nil {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+// CreateProduct - function to create an product row.
+// Duplicate rows are not allowed and will throw error
+func (sqlDbi *SQLDBI) CreateProduct(req []util.CreateProductReq) error {
+	const createProductQuery = `INSERT INTO Product (ProductID, ProductType, StoreSize, Duration, Amount) VALUES `
+	const endQuery = ` ON DUPLICATE KEY UPDATE ProductID = VALUES(ProductID), ProductType = VALUES(ProductType), 
+                    StoreSize = VALUES(StoreSize), Duration = VALUES(Duration), Amount = VALUES(Amount) `
+	var err error
+
+	query := createProductQuery
+	args := []interface{}{}
+
+	for i, r := range req {
+		if i == len(req)-1 {
+			query += "(?, ?, ?, ?, ?)"
+		} else {
+			query += "(?, ?, ?, ?, ?), "
+		}
+		args = append(args, r.ProductID, r.ProductType, r.StoreSize, r.Duration, r.Amount)
+	}
+	query += endQuery
+
+	_, err = sqlDbi.db.Exec(query, args...)
+	if err != nil {
+		sqlDbi.logObj.PrintError("Failed to create product: %s", err.Error())
+		return fmt.Errorf("Failed to create the product %v", err)
+	}
+
+	return nil
+}

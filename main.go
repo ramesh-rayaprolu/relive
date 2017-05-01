@@ -53,11 +53,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	productInitErr := api.InitProductsDB(sqlDbi)
+	if productInitErr != nil {
+		logObj.PrintError("Could not initialize Products table. Error %s", productInitErr.Error())
+		os.Exit(1)
+	}
+
 	accountAPI := api.AccountsAPI{
 		AccountDBI:      sqlDbi.AccountDBI,
 		SubscriptionDBI: sqlDbi.SubscriptionDBI,
 		LogObj:          logObj,
 	}
+
+	/*productAPI := api.ProductsAPI{
+		ProductDBI: sqlDbi.ProductDBI,
+		//SubscriptionDBI: sqlDbi.SubscriptionDBI,
+		LogObj: logObj,
+	}*/
 
 	subscriptionAPI := api.SubscriptionAPI{
 		SubscriptionDBI:        sqlDbi.SubscriptionDBI,

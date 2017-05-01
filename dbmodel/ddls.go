@@ -26,7 +26,7 @@ var TableCreateSQL = []string{
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;`,
 
 	`CREATE TABLE IF NOT EXISTS Product (
-		  ProductID int(11) NOT NULL AUTO_INCREMENT,
+		  ProductID int(11) NOT NULL,
 		  ProductType varchar(100) NOT NULL,
 		  StoreSize int(11) NOT NULL,
 		  Duration int(11) NOT NULL,
