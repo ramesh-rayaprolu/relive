@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 
 	"github.com/msproject/relive/dbi"
 	"github.com/msproject/relive/logger"
@@ -29,22 +30,15 @@ func handleSubscriptionSearch(api SubscriptionAPI, args []string, w http.Respons
 		return fmt.Errorf("Incorrect Method used for API /api/subscription/search")
 	}
 
-	fmt.Println("before prtining args")
 	/* anything after /api/subscription/search/ will be in args, split by '/' */
-	fmt.Println("arguments in search: ", args)
-
-	//err := api.SubscriptionDBI.SearchSubscription(strconv.Atoi(args))
-	var subscrCode uint32
-	subscrCode = 3
-	fmt.Println("subscrCode = ", args)
+	subscrCode, erl := strconv.Atoi(args[1])
+	if erl != nil {
+		fmt.Println("error")
+	}
 
 	var subs []util.SubscrDetails
-	subs, err := api.SubscriptionDBI.SearchSubscription(subscrCode)
-	//err := api.SubscriptionDBI.SearchSubscription(uint32(args))
-	//fmt.Println(subs)
-
+	subs, err := api.SubscriptionDBI.SearchSubscription(uint32(subscrCode))
 	jsonStr, err := json.Marshal(subs)
-	fmt.Println("json: ", jsonStr)
 
 	w.Header().Set("Content-Type", "application/json")
 	n, err := w.Write(jsonStr)
