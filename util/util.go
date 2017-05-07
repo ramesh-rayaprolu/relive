@@ -26,6 +26,18 @@ type LoginReq struct {
 	PWD      string
 }
 
+// CreateSubscriptionReq - used to create subscription
+type CreateSubscriptionReq struct {
+	ID               uint32 // ID is constrained to Account ID
+	ProductID        uint32 // constrained
+	SubscriptionCode uint32
+	ProductType      string
+	StoreLocation    string
+	StartDate        string
+	EndDate          string
+	NumberOfAdmins   uint32
+}
+
 // SearchAccountReq - used to Search account
 type SearchAccountReq struct {
 	UserName  string
@@ -35,4 +47,20 @@ type SearchAccountReq struct {
 	PWD       string
 	CompanyID uint32 `json:"CompanyID,omitempty"`
 	Role      uint32 `json:"Role,omitempty"`
+}
+
+// SubscrDetails struct
+type SubscrDetails struct {
+	ID          int
+	ProductID   int
+	SubscrCode  int
+	ProductType string
+}
+
+type PaymentDetails struct {
+	ID             int
+	CCNumber       string
+	BillingAddress string
+	CCExpiry       string
+	CVVCode        int
 }

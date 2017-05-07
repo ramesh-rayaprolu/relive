@@ -1,11 +1,14 @@
 package dbi
 
 import (
-	"github.com/msproject/relive/dbmodel"
+	//"github.com/msproject/relive/dbmodel"
+	"github.com/msproject/relive/util"
 )
 
 // SubscriptionTblDBI - testing
 type SubscriptionTblDBI interface {
-	// Addsubscription - testing
-	AddSubscription(subDetails *dbmodel.SubscriptionEntry) error
+	CreateSubscription(req util.CreateSubscriptionReq) error
+	UpdateSubscription(req util.CreateSubscriptionReq) error
+	DeleteSubscription(subscriptionCode uint32) error
+	SearchSubscription(subscriptionCode uint32) ([]util.SubscrDetails, error)
 }

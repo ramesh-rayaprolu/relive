@@ -3,6 +3,7 @@ package dbi
 import (
 	"crypto/md5"
 	"database/sql"
+	//	"encoding/json"
 	"fmt"
 	"github.com/msproject/relive/dbmodel"
 	"github.com/msproject/relive/logger"
@@ -240,10 +241,15 @@ func (sqlDbi *SQLDBI) AddAccounts(acDetails *dbmodel.AccountEntry) (err error) {
 	return nil
 }
 
+/**********************************************************************************************************************************
+*
+*	PAYMENT FUNCTIONS
+*
+**********************************************************************************************************************************/
 // AddPayment - testing
 func (sqlDbi *SQLDBI) AddPayment(pyDetails *dbmodel.PaymentEntry) (err error) {
 
-	const sqlInsertPaymentQry = `INSERT INTO payment (ID, CCNumber, BillingAddress, CCExpiry, CVVCode) VALUES `
+	const sqlInsertPaymentQry = `INSERT INTO Payment (ID, CCNumber, BillingAddress, CCExpiry, CVVCode) VALUES `
 
 	var query = sqlInsertPaymentQry
 	args := []interface{}{}
@@ -253,6 +259,57 @@ func (sqlDbi *SQLDBI) AddPayment(pyDetails *dbmodel.PaymentEntry) (err error) {
 	//query += sqlUpdateAccountQry
 
 	_, err = sqlDbi.db.Exec(query, args...)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (sqlDbi *SQLDBI) UpdatePayment(pyDetails *dbmodel.PaymentEntry) (err error) {
+
+	//	const sqlUpdatePaymentQry = `UPDATE Payment set CCNumber = ? where ID = ? `
+	const sqlUpdatePaymentQry = `UPDATE Payment set ID = ?, CCNumber = ?, BillingAddress = ?, CCExpiry = ?, CVVCode = ? WHERE ID = ? `
+
+	args := []interface{}{}
+	args = append(args, pyDetails.ID, pyDetails.CCNumber, pyDetails.BillingAddress, pyDetails.CCExpiry, pyDetails.CVVCode, pyDetails.ID)
+
+	_, err = sqlDbi.db.Exec(sqlUpdatePaymentQry, args...)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (sqlDbi *SQLDBI) SearchPayment(ID int) (pays []util.PaymentDetails, err error) {
+
+	const SearchPaymentQry = `SELECT ID, CCNumber, BillingAddress, CCExpiry, CVVCode FROM Payment WHERE ID = ?`
+
+	rows, err := sqlDbi.db.Query(SearchPaymentQry, ID)
+
+	if err != nil {
+		return pays, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var payStruct util.PaymentDetails
+
+		if err := rows.Scan(&payStruct.ID, &payStruct.CCNumber, &payStruct.BillingAddress, &payStruct.CCExpiry, &payStruct.CVVCode); err != nil {
+			fmt.Println("Error in scanning")
+		}
+
+		pays = append(pays, payStruct)
+	}
+
+	return pays, nil
+}
+
+func (sqlDbi *SQLDBI) DeletePayment(paymentID int) (err error) {
+	const deletePaymentQry = `DELETE FROM Payment WHERE ID = ?`
+
+	_, err = sqlDbi.db.Exec(deletePaymentQry, paymentID)
 
 	if err != nil {
 		return err
@@ -280,8 +337,13 @@ func (sqlDbi *SQLDBI) AddPaymentHistory(pyhDetails *dbmodel.PaymentHistoryEntry)
 	return nil
 }
 
-// AddSubscription - testing
-func (sqlDbi *SQLDBI) AddSubscription(subDetails *dbmodel.SubscriptionEntry) (err error) {
+/**********************************************************************************************************************************
+*
+*	SUBSCRIPTION FUNCTIONS
+*
+**********************************************************************************************************************************/
+// CreateSubscription - testing
+func (sqlDbi *SQLDBI) CreateSubscription(req util.CreateSubscriptionReq) (err error) {
 
 	const sqlInsertSubscriptionQry = `INSERT INTO Subscription (ID, ProductID, ProductType, StoreLocation, StartDate, EndDate, NumberOfAdmins) VALUES `
 
@@ -289,7 +351,7 @@ func (sqlDbi *SQLDBI) AddSubscription(subDetails *dbmodel.SubscriptionEntry) (er
 	args := []interface{}{}
 
 	query += "(?, ?, ?, ?, ?, ?, ?)"
-	args = append(args, subDetails.ID, subDetails.ProductID, subDetails.ProductType, subDetails.StoreLocation, subDetails.StartDate, subDetails.EndDate, subDetails.NumberOfAdmins)
+	args = append(args, req.ID, req.ProductID, req.ProductType, req.StoreLocation, req.StartDate, req.EndDate, req.NumberOfAdmins)
 	//query += sqlUpdateAccountQry
 
 	_, err = sqlDbi.db.Exec(query, args...)
@@ -298,6 +360,71 @@ func (sqlDbi *SQLDBI) AddSubscription(subDetails *dbmodel.SubscriptionEntry) (er
 		return err
 	}
 	return nil
+}
+
+// UpdateSubscription -- update NumberOfAdmins by SubscriptionCode
+func (sqlDbi *SQLDBI) UpdateSubscription(req util.CreateSubscriptionReq) (err error) {
+
+	const sqlUpdateSubscriptionQry = `UPDATE Subscription set NumberOfAdmins = ? where SubscriptionCode = ? `
+
+	args := []interface{}{}
+	args = append(args, req.NumberOfAdmins, req.SubscriptionCode)
+
+	_, err = sqlDbi.db.Exec(sqlUpdateSubscriptionQry, args...)
+
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+//DeleteSubscription
+func (sqlDbi *SQLDBI) DeleteSubscription(subscriptionCode uint32) (err error) {
+	const deleteSubscriptionQry = `DELETE FROM Subscription WHERE SubscriptionCode = ?`
+
+	_, err = sqlDbi.db.Exec(deleteSubscriptionQry, subscriptionCode)
+
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+//SearchSubscription
+func (sqlDbi *SQLDBI) SearchSubscription(subscriptionCode uint32) (subs []util.SubscrDetails, err error) {
+	const SearchSubscriptionQry = `SELECT ID, ProductID, SubscriptionCode, ProductType FROM Subscription WHERE SubscriptionCode = ?`
+
+	fmt.Println(subscriptionCode)
+	//Result result
+	//result, err := sqlDbi.db.Exec(SearchSubscriptionQry, subscriptionCode)
+	rows, err := sqlDbi.db.Query(SearchSubscriptionQry, subscriptionCode)
+
+	if err != nil {
+		return subs, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var sub util.SubscrDetails
+
+		//fmt.Println(sub.productType)
+		//if err := rows.Scan(&ProductType); err != nil {
+		//		fmt.Println("Error")
+		//	}
+
+		if err := rows.Scan(&sub.ID, &sub.ProductID, &sub.SubscrCode, &sub.ProductType); err != nil {
+			fmt.Println("Error in scanning")
+		}
+
+		//fmt.Println(rows)
+		fmt.Println("sub.ProductType: ", sub.ProductType)
+
+		subs = append(subs, sub)
+	}
+	return subs, nil
+
 }
 
 // AddSubscriptionAccount - testing
@@ -320,6 +447,12 @@ func (sqlDbi *SQLDBI) AddSubscriptionAccount(subacDetails *dbmodel.SubscriptionA
 	return nil
 }
 
+/**********************************************************************************************************************************
+*
+*	PRODUCT FUNCTIONS
+*
+**********************************************************************************************************************************/
+
 // AddProduct - testing
 func (sqlDbi *SQLDBI) AddProduct(prDetails *dbmodel.ProductEntry) (err error) {
 
@@ -339,6 +472,12 @@ func (sqlDbi *SQLDBI) AddProduct(prDetails *dbmodel.ProductEntry) (err error) {
 	}
 	return nil
 }
+
+/**********************************************************************************************************************************
+*
+*	ACCOUNT FUNCTIONS
+*
+**********************************************************************************************************************************/
 
 // SearchAccount - function to Search an account row.
 //                 Duplicate rows are not allowed and will throw error
