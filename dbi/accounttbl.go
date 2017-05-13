@@ -22,6 +22,12 @@ type AccountTblDBI interface {
 	// SearchAccount - test
 	SearchAccount(UserName string) (util.SearchAccountReq, error)
 
+	UpdateAccount(upDetails *dbmodel.AccountEntry) error
+
+	UpdateMyAccount(upDetails *dbmodel.AccountEntry) error
+
 	// AddAccounts - testing
 	AddAccounts(acDetails *dbmodel.AccountEntry) error
+
+	DeleteAccount(userName string) error
 }

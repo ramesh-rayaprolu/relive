@@ -5,6 +5,7 @@ type (
 	AccountEntry struct {
 		ID           int
 		PID          int
+		UserName     string
 		FirstName    string
 		LastName     string
 		EmailID      string

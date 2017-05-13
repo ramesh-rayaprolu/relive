@@ -177,47 +177,45 @@ func hashPWDAndSalt(PWD, salt string) string {
 
 //Login - verify user/password from DB
 func (sqlDbi *SQLDBI) Login(userName, PWD string) (*dbmodel.AccountEntry, error) {
-	/*    const LoginQuery = `SELECT UserName, Email, FullName, Role, Status, PasswordDigest, Salt
-	        FROM Accounts WHERE UserName = ?`
+	const LoginQuery = `SELECT UserName, EmailID, FirstName, LastName, Role, PasswdDigest, Salt
+	        FROM Account WHERE UserName = ?`
 
-	      var (
-	          rows *sql.Rows
-	          err  error
-	      )
+	var (
+		rows *sql.Rows
+		err  error
+	)
 
-	      vals := []interface{}{}
-	      vals = append(vals, userName)
+	vals := []interface{}{}
+	vals = append(vals, userName)
 
-	      rows, err = s.db.Query(LoginQuery, vals...)
-	      if err != nil {
-	          return nil, fmt.Errorf("Failed querying accounts %v", err)
-	      }
-	      defer rows.Close()
-	      account := &model.Account{}
-	      var passwordDigest, salt string
-	      if rows.Next() {
-	          err := rows.Scan(
-	              &account.UserName,
-	              &account.Email,
-	              &account.FullName,
-	              &account.Role,
-	              &account.Status,
-	              &passwordDigest,
-	              &salt)
-	          if err != nil {
-	              return nil, fmt.Errorf("Failed scanning accounts %v", err)
-	          }
-	      }
+	rows, err = sqlDbi.db.Query(LoginQuery, vals...)
+	if err != nil {
+		return nil, fmt.Errorf("Failed querying accounts %v", err)
+	}
+	defer rows.Close()
+	account := &dbmodel.AccountEntry{}
+	var passwordDigest, salt string
+	if rows.Next() {
+		err := rows.Scan(
+			&account.UserName,
+			&account.EmailID,
+			&account.FirstName,
+			&account.LastName,
+			&account.Role,
+			&passwordDigest,
+			&salt)
+		if err != nil {
+			return nil, fmt.Errorf("Failed scanning accounts %v", err)
+		}
+	}
 
+	inPasswordDigest := hashPWDAndSalt(PWD, salt)
 
-	      inPasswordDigest := hashPWDAndSalt(PWD, salt)
+	if inPasswordDigest != passwordDigest {
+		return nil, fmt.Errorf("The username and password don't match.")
+	}
 
-	      if inPasswordDigest != passwordDigest {
-	          return nil, fmt.Errorf("The username and password don't match.")
-	      }
-
-	      return account, nil*/
-	return nil, nil
+	return account, nil
 }
 
 // AddAccounts - testing
@@ -515,6 +513,49 @@ func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, err
 	}
 
 	return req, nil
+}
+
+// UpdateAccount
+func (sqlDbi *SQLDBI) UpdateAccount(upDetails *dbmodel.AccountEntry) (err error) {
+
+	const sqlUpdateAccountQry = `INSERT INTO TableName (PID, FirstName, LastName, EmailID, Role) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE PID = VALUES(PID),  FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID), Role = VALUES(Role);`
+
+	args := []interface{}{}
+	args = append(args, upDetails.PID, upDetails.FirstName, upDetails.LastName, upDetails.EmailID, upDetails.Role)
+
+	_, err = sqlDbi.db.Exec(sqlUpdateAccountQry, args...)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateMyAccount
+func (sqlDbi *SQLDBI) UpdateMyAccount(upmDetails *dbmodel.AccountEntry) (err error) {
+
+	const sqlUpdateAccountQry = `INSERT INTO TableName (PID, FirstName, LastName, EmailID) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE PID = VALUES(PID),  FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID);`
+
+	args := []interface{}{}
+	args = append(args, upmDetails.PID, upmDetails.FirstName, upmDetails.LastName, upmDetails.EmailID)
+
+	_, err = sqlDbi.db.Exec(sqlUpdateAccountQry, args...)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (sqlDbi *SQLDBI) DeleteAccount(userName string) (err error) {
+	const deleteAccountQry = `DELETE FROM Account WHERE userName = ?`
+
+	_, err = sqlDbi.db.Exec(deleteAccountQry, userName)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // AddMediaType - testing
