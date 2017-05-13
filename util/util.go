@@ -49,6 +49,12 @@ type SearchAccountReq struct {
 	Role      uint32 `json:"Role,omitempty"`
 }
 
+//UserDetails - return admins user list
+type UserDetails struct {
+	UserName string
+	ID       int
+}
+
 // SubscrDetails struct
 type SubscrDetails struct {
 	ID          int
@@ -57,6 +63,7 @@ type SubscrDetails struct {
 	ProductType string
 }
 
+//PaymentDetails - payment details
 type PaymentDetails struct {
 	ID             int
 	CCNumber       string

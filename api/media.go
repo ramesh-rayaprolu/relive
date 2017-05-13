@@ -7,45 +7,65 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/msproject/relive/dbi"
+	"github.com/msproject/relive/dbmodel"
 	"github.com/msproject/relive/logger"
 )
 
 // MediaAPI struct
 type MediaAPI struct {
-	MediaDBI dbi.MediaTypeTblDBI
-	LogObj   *logger.Logger
-}
-
-//	/api/media/search
-func handleMediaSearch(api MediaAPI, args []string, w http.ResponseWriter, r *http.Request) error {
-	return nil
+	MediaDBI   dbi.MediaTypeTblDBI
+	AccountDBI dbi.AccountTblDBI
+	LogObj     *logger.Logger
 }
 
 // /api/media/store
 func handleMediaStore(api MediaAPI, args []string, w http.ResponseWriter, r *http.Request) error {
-	var formname, filename string
+
+	var id uint64
+	var err error
+	var parsedURLSuffix *url.URL
+	var catalog, title string
+
 	URLSuffix := args[0]
-	parsedURLSuffix, err := url.Parse(URLSuffix)
+	parsedURLSuffix, err = url.Parse(URLSuffix)
 	params := parsedURLSuffix.Query()
 
-	if len(params["formname"]) > 0 {
-		formname = params["formname"][0]
+	if len(params["catalog"]) > 0 {
+		catalog = params["catalog"][0]
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		return fmt.Errorf("invalid catalog specified in request URL")
+	}
+
+	if len(params["title"]) > 0 {
+		title = params["title"][0]
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		return fmt.Errorf("invalid title specified in request URL")
+	}
+
+	if len(params["id"]) > 0 {
+		id, err = strconv.ParseUint(params["id"][0], 10, 32)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return fmt.Errorf("invalid customer id specified in request URL")
+		}
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		return fmt.Errorf("required query parameters NOT specified in search request")
 	}
 
-	if len(params["filename"]) > 0 {
-		filename = params["filename"][0]
-	} else {
-		w.WriteHeader(http.StatusBadRequest)
-		return fmt.Errorf("required query parameters NOT specified in search request")
+	err = api.AccountDBI.CheckAccountExistsByID(id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return fmt.Errorf("Cannot upload media to unknown customer")
 	}
 
 	r.ParseMultipartForm(32 << 20)
-	file, header, err := r.FormFile(formname)
+	file, header, err := r.FormFile("file")
 
 	if err != nil {
 		fmt.Fprintln(w, err)
@@ -54,7 +74,7 @@ func handleMediaStore(api MediaAPI, args []string, w http.ResponseWriter, r *htt
 
 	defer file.Close()
 
-	outfileName := "/tmp/" + filename
+	outfileName := "/tmp/" + header.Filename
 	out, err := os.Create(outfileName)
 	if err != nil {
 		fmt.Fprintf(w, "Unable to create the file for writing. Check your write access privilege")
@@ -66,21 +86,29 @@ func handleMediaStore(api MediaAPI, args []string, w http.ResponseWriter, r *htt
 	// write the content from POST to the file
 	_, err = io.Copy(out, file)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintln(w, err)
+		return fmt.Errorf("Cannot upload requested Object: %v", err)
+	}
+
+	mediaURL := "http://localhost:9999/api/media/play/" + header.Filename + ".m3u8"
+	mDetails := &dbmodel.MediaTypeEntry{
+		ID:       int(id),
+		Catalog:  catalog,
+		FileName: header.Filename,
+		Title:    title,
+		URL:      mediaURL,
+	}
+
+	err = api.MediaDBI.AddMediaType(mDetails)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, err)
+		return fmt.Errorf("Cannot upload requested Object: %v", err)
 	}
 
 	fmt.Fprintf(w, "File uploaded successfully : ")
 	fmt.Fprintf(w, header.Filename)
-	return nil
-}
-
-// /api/media/update -
-func handleMediaUpdate(api MediaAPI, args []string, w http.ResponseWriter, r *http.Request) error {
-	return nil
-}
-
-// /api/media/delete -
-func handleMediaDelete(api MediaAPI, args []string, w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
@@ -109,36 +137,12 @@ func (api MediaAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	var regex string
-	regex = "/api/media/search$"
-	media = append(media,
-		mediaT{
-			regex: regex,
-			re:    regexp.MustCompile(regex),
-			f:     handleMediaSearch,
-		},
-	)
 	regex = "/api/media/store\\?([^/]+)$"
 	media = append(media,
 		mediaT{
 			regex: regex,
 			re:    regexp.MustCompile(regex),
 			f:     handleMediaStore,
-		},
-	)
-	regex = "/api/media/update$"
-	media = append(media,
-		mediaT{
-			regex: regex,
-			re:    regexp.MustCompile(regex),
-			f:     handleMediaUpdate,
-		},
-	)
-	regex = "/api/media/delete$"
-	media = append(media,
-		mediaT{
-			regex: regex,
-			re:    regexp.MustCompile(regex),
-			f:     handleMediaDelete,
 		},
 	)
 }

@@ -67,6 +67,28 @@ func (sqlDbi *SQLDBI) CheckAccountExists(userName string) (bool, error) {
 	return false, nil
 }
 
+//CheckAccountExistsByID - check if given account exists
+func (sqlDbi *SQLDBI) CheckAccountExistsByID(id uint64) error {
+	const IsAccountExistQuery = "Select COUNT(*) as count from Account where ID = ?"
+	var (
+		rows *sql.Rows
+		err  error
+	)
+
+	rows, err = sqlDbi.db.Query(IsAccountExistQuery, id)
+	if err != nil {
+		sqlDbi.logObj.PrintError("Failed querying accounts %v", err)
+		return fmt.Errorf("Failed querying accounts %v", err)
+	}
+	defer rows.Close()
+
+	if checkCount(rows) > 0 {
+		return nil
+	}
+
+	return fmt.Errorf("account does not exist")
+}
+
 func checkCount(rows *sql.Rows) (count int) {
 	for rows.Next() {
 		err := rows.Scan(&count)
@@ -518,6 +540,36 @@ func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, err
 	}
 
 	return req, nil
+}
+
+//SearchAndGetAccountIDs - test
+func (sqlDbi *SQLDBI) SearchAndGetAccountIDs(adminID int) ([]util.UserDetails, error) {
+	const SearchAccountQuery = `SELECT UserName, ID FROM Account WHERE PID = ?`
+	var resp []util.UserDetails
+
+	query := SearchAccountQuery
+	args := []interface{}{}
+
+	args = append(args, adminID)
+
+	rows, err := sqlDbi.db.Query(query, args...)
+	if err != nil {
+		sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
+		return resp, fmt.Errorf("Failed to Search the account %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var item util.UserDetails
+		err := rows.Scan(&item.UserName, &item.ID)
+		if err != nil {
+			sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
+			return resp, fmt.Errorf("Failed to Search the account %v", err)
+		}
+		resp = append(resp, item)
+	}
+
+	return resp, nil
 }
 
 // UpdateAccount - test

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 
 	"github.com/msproject/relive/dbi"
 	"github.com/msproject/relive/dbmodel"
@@ -92,6 +93,47 @@ func handleAccountsSearch(api AccountsAPI, args []string, w http.ResponseWriter,
 
 	w.WriteHeader(http.StatusOK)
 	err = writeResponse(req, w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return err
+	}
+	return nil
+}
+
+func handleAdminAccountsSearch(api AccountsAPI, args []string, w http.ResponseWriter, r *http.Request) error {
+	var id uint64
+	var err error
+	var parsedURLSuffix *url.URL
+	var resp []util.UserDetails
+
+	if r.Method != "GET" {
+		w.Header().Set("Allow", "GET")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return fmt.Errorf("Incorrect Method used for API /api/accounts/Search")
+	}
+
+	URLSuffix := args[0]
+	parsedURLSuffix, err = url.Parse(URLSuffix)
+	params := parsedURLSuffix.Query()
+
+	if len(params["id"]) > 0 {
+		id, err = strconv.ParseUint(params["id"][0], 10, 32)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return fmt.Errorf("invalid admin id specified in request URL")
+		}
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		return fmt.Errorf("required query parameters NOT specified in search request")
+	}
+
+	resp, err = api.AccountDBI.SearchAndGetAccountIDs(int(id))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+
+	err = writeResponse(resp, w)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return err
@@ -297,12 +339,20 @@ var account []accountT
 
 func init() {
 	var regex string
-	regex = "/api/accounts/search\\?([^/]+)$"
+	regex = "/api/accounts/search\\?user=([^/]+)$"
 	account = append(account,
 		accountT{
 			regex: regex,
 			re:    regexp.MustCompile(regex),
 			f:     handleAccountsSearch,
+		},
+	)
+	regex = "/api/accounts/search\\?id=([^/]+)$"
+	account = append(account,
+		accountT{
+			regex: regex,
+			re:    regexp.MustCompile(regex),
+			f:     handleAdminAccountsSearch,
 		},
 	)
 	regex = "/api/accounts/create$"

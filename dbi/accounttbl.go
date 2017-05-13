@@ -13,6 +13,9 @@ type AccountTblDBI interface {
 	//CheckAccountExists - test
 	CheckAccountExists(userName string) (bool, error)
 
+	//CheckAccountExists - test
+	CheckAccountExistsByID(id uint64) error
+
 	// Login - test
 	Login(userName, PWD string) (*dbmodel.AccountEntry, error)
 
@@ -25,6 +28,9 @@ type AccountTblDBI interface {
 	UpdateAccount(upDetails *dbmodel.AccountEntry) error
 
 	UpdateMyAccount(upDetails *dbmodel.AccountEntry) error
+
+	// SearchAndGetAccountIDs - test
+	SearchAndGetAccountIDs(adminID int) ([]util.UserDetails, error)
 
 	// AddAccounts - testing
 	AddAccounts(acDetails *dbmodel.AccountEntry) error

@@ -83,8 +83,9 @@ func main() {
 		LogObj:            logObj,
 	}
 	mediaAPI := api.MediaAPI{
-		MediaDBI: sqlDbi.MediaTypeDBI,
-		LogObj:   logObj,
+		MediaDBI:   sqlDbi.MediaTypeDBI,
+		AccountDBI: sqlDbi.AccountDBI,
+		LogObj:     logObj,
 	}
 
 	router := api.Router{
