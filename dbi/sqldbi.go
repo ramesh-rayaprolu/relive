@@ -523,10 +523,12 @@ func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, err
 // UpdateAccount - test
 func (sqlDbi *SQLDBI) UpdateAccount(upDetails *dbmodel.AccountEntry) (err error) {
 
-	const sqlUpdateAccountQry = `INSERT INTO Account (ID, PID, UserName, FirstName, LastName, EmailID, Role) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ID = VALUES(ID), PID = VALUES(PID),  UserName = VALUES(UserName), FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID), Role = VALUES(Role);`
+	//const sqlUpdateAccountQry = `INSERT INTO Account (ID, PID, UserName, FirstName, LastName, EmailID, Role) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ID = VALUES(ID), PID = VALUES(PID),  UserName = VALUES(UserName), FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID), Role = VALUES(Role);`
+
+	const sqlUpdateAccountQry = `UPDATE Account set ID = ?, PID = ?, UserName = ?, FirstName = ?, LastName = ?, EmailID = ?, Role = ? WHERE ID = ?;`
 
 	args := []interface{}{}
-	args = append(args, upDetails.ID, upDetails.PID, upDetails.UserName, upDetails.FirstName, upDetails.LastName, upDetails.EmailID, upDetails.Role)
+	args = append(args, upDetails.ID, upDetails.PID, upDetails.UserName, upDetails.FirstName, upDetails.LastName, upDetails.EmailID, upDetails.Role, upDetails.ID)
 
 	_, err = sqlDbi.db.Exec(sqlUpdateAccountQry, args...)
 
@@ -539,10 +541,12 @@ func (sqlDbi *SQLDBI) UpdateAccount(upDetails *dbmodel.AccountEntry) (err error)
 // UpdateMyAccount - test
 func (sqlDbi *SQLDBI) UpdateMyAccount(upmDetails *dbmodel.AccountEntry) (err error) {
 
-	const sqlUpdateAccountQry = `INSERT INTO Account (ID, PID, UserName, FirstName, LastName, EmailID) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ID = VALUES(ID), PID = VALUES(PID),  UserName = VALUES(UserName), FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID);`
+	//const sqlUpdateAccountQry = `INSERT INTO Account (ID, PID, UserName, FirstName, LastName, EmailID) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ID = VALUES(ID), PID = VALUES(PID),  UserName = VALUES(UserName), FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID);`
+
+	const sqlUpdateAccountQry = `UPDATE Account set ID = ?, PID = ?, UserName = ?, FirstName = ?, LastName = ?, EmailID = ? WHERE ID = ?;`
 
 	args := []interface{}{}
-	args = append(args, upmDetails.ID, upmDetails.PID, upmDetails.UserName, upmDetails.FirstName, upmDetails.LastName, upmDetails.EmailID)
+	args = append(args, upmDetails.ID, upmDetails.PID, upmDetails.UserName, upmDetails.FirstName, upmDetails.LastName, upmDetails.EmailID, upmDetails.ID)
 
 	_, err = sqlDbi.db.Exec(sqlUpdateAccountQry, args...)
 

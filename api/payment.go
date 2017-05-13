@@ -80,8 +80,6 @@ func handlePaymentDo(api PaymentAPI, args []string, w http.ResponseWriter, r *ht
 		return fmt.Errorf("Error decoding the request: %s", err.Error())
 	}
 
-	fmt.Println("after req")
-
 	err := api.PaymentDBI.AddPayment(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -108,8 +106,6 @@ func handlePaymentUpdate(api PaymentAPI, args []string, w http.ResponseWriter, r
 		w.WriteHeader(http.StatusInternalServerError)
 		return fmt.Errorf("Error decoding the request: %s", err.Error())
 	}
-
-	fmt.Println("after req")
 
 	err := api.PaymentDBI.UpdatePayment(req)
 	if err != nil {

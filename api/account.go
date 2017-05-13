@@ -8,9 +8,9 @@ import (
 	"regexp"
 
 	"github.com/msproject/relive/dbi"
+	"github.com/msproject/relive/dbmodel"
 	"github.com/msproject/relive/logger"
 	"github.com/msproject/relive/util"
-	"github.com/msproject/relive/dbmodel"
 )
 
 // AccountsAPI struct
@@ -151,14 +151,12 @@ func handleAccountsUpdate(api AccountsAPI, args []string, w http.ResponseWriter,
 	}
 
 	// decode the JSON against the structure
-	var req *dbmodel.AccountEntry 
+	var req *dbmodel.AccountEntry
 	d := json.NewDecoder(r.Body)
 	if err := d.Decode(&req); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return fmt.Errorf("Error decoding the request: %s", err.Error())
 	}
-
-	fmt.Println("after req")
 
 	err := api.AccountDBI.UpdateAccount(req)
 	if err != nil {
@@ -170,35 +168,31 @@ func handleAccountsUpdate(api AccountsAPI, args []string, w http.ResponseWriter,
 	return nil
 }
 
-
 func handleMyAccountUpdate(api AccountsAPI, args []string, w http.ResponseWriter, r *http.Request) error {
-        // check for API Method
-        if r.Method != "POST" {
-                w.Header().Set("Allow", "POST")
-                w.WriteHeader(http.StatusMethodNotAllowed)
-                return fmt.Errorf("Incorrect Method used for API /api/Account/update")
-        }
+	// check for API Method
+	if r.Method != "POST" {
+		w.Header().Set("Allow", "POST")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return fmt.Errorf("Incorrect Method used for API /api/Account/update")
+	}
 
-        // decode the JSON against the structure
-        var req *dbmodel.AccountEntry
-        d := json.NewDecoder(r.Body)
-        if err := d.Decode(&req); err != nil {
-                w.WriteHeader(http.StatusInternalServerError)
-                return fmt.Errorf("Error decoding the request: %s", err.Error())
-        }
+	// decode the JSON against the structure
+	var req *dbmodel.AccountEntry
+	d := json.NewDecoder(r.Body)
+	if err := d.Decode(&req); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return fmt.Errorf("Error decoding the request: %s", err.Error())
+	}
 
-        fmt.Println("after req")
+	err := api.AccountDBI.UpdateMyAccount(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
 
-        err := api.AccountDBI.UpdateMyAccount(req)
-        if err != nil {
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return err
-        }
-
-        w.WriteHeader(http.StatusNoContent)
-        return nil
+	w.WriteHeader(http.StatusNoContent)
+	return nil
 }
-
 
 // /api/accounts/change - change password
 func handleChangePassword(api AccountsAPI, args []string, w http.ResponseWriter, r *http.Request) error {
@@ -245,7 +239,6 @@ func handleAccountsLogin(api AccountsAPI, args []string, w http.ResponseWriter, 
 	return nil
 }
 
-
 // /api/Account/delete -
 func handleAccountDelete(api AccountsAPI, args []string, w http.ResponseWriter, r *http.Request) error {
 	// check for API Method
@@ -278,7 +271,6 @@ func handleAccountDelete(api AccountsAPI, args []string, w http.ResponseWriter, 
 
 	return nil
 }
-
 
 func (api AccountsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, d := range account {
