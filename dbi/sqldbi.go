@@ -623,14 +623,13 @@ func (sqlDbi *SQLDBI) DeleteAccount(userName string) (err error) {
 // AddMediaType - testing
 func (sqlDbi *SQLDBI) AddMediaType(mtDetails *dbmodel.MediaTypeEntry) (err error) {
 
-	const sqlInsertMediatypeQry = `INSERT INTO Mediatype (ID, Catalog, FileName, Title, Description, URL, Poster) VALUES `
+	const sqlInsertMediatypeQry = `INSERT INTO MediaType (ID, Catalog, FileName, Title, Description, URL, Poster) VALUES `
 
 	var query = sqlInsertMediatypeQry
 	args := []interface{}{}
 
 	query += "(?, ?, ?, ?, ?, ?, ?)"
 	args = append(args, mtDetails.ID, mtDetails.Catalog, mtDetails.FileName, mtDetails.Title, mtDetails.Description, mtDetails.URL, mtDetails.Poster)
-	//query += sqlUpdateAccountQry
 
 	_, err = sqlDbi.db.Exec(query, args...)
 
