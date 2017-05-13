@@ -7,7 +7,7 @@ type CreateAccountReq struct {
 	FirstName string
 	LastName  string
 	PWD       string
-	CompanyID uint32 `json:"CompanyID,omitempty"`
+	CompanyID uint32 `json:"PID,omitempty"`
 	Role      uint32 `json:"Role,omitempty"`
 }
 
