@@ -212,7 +212,7 @@ func (sqlDbi *SQLDBI) Login(userName, PWD string) (*dbmodel.AccountEntry, error)
 	inPasswordDigest := hashPWDAndSalt(PWD, salt)
 
 	if inPasswordDigest != passwordDigest {
-		return nil, fmt.Errorf("The username and password don't match.")
+		return nil, fmt.Errorf("The username and password don't match")
 	}
 
 	return account, nil
@@ -244,6 +244,7 @@ func (sqlDbi *SQLDBI) AddAccounts(acDetails *dbmodel.AccountEntry) (err error) {
 *	PAYMENT FUNCTIONS
 *
 **********************************************************************************************************************************/
+
 // AddPayment - testing
 func (sqlDbi *SQLDBI) AddPayment(pyDetails *dbmodel.PaymentEntry) (err error) {
 
@@ -264,6 +265,7 @@ func (sqlDbi *SQLDBI) AddPayment(pyDetails *dbmodel.PaymentEntry) (err error) {
 	return nil
 }
 
+//UpdatePayment - test
 func (sqlDbi *SQLDBI) UpdatePayment(pyDetails *dbmodel.PaymentEntry) (err error) {
 
 	//	const sqlUpdatePaymentQry = `UPDATE Payment set CCNumber = ? where ID = ? `
@@ -280,6 +282,7 @@ func (sqlDbi *SQLDBI) UpdatePayment(pyDetails *dbmodel.PaymentEntry) (err error)
 	return nil
 }
 
+//SearchPayment -- test
 func (sqlDbi *SQLDBI) SearchPayment(ID int) (pays []util.PaymentDetails, err error) {
 
 	const SearchPaymentQry = `SELECT ID, CCNumber, BillingAddress, CCExpiry, CVVCode FROM Payment WHERE ID = ?`
@@ -304,6 +307,7 @@ func (sqlDbi *SQLDBI) SearchPayment(ID int) (pays []util.PaymentDetails, err err
 	return pays, nil
 }
 
+//DeletePayment - test
 func (sqlDbi *SQLDBI) DeletePayment(paymentID int) (err error) {
 	const deletePaymentQry = `DELETE FROM Payment WHERE ID = ?`
 
@@ -340,6 +344,7 @@ func (sqlDbi *SQLDBI) AddPaymentHistory(pyhDetails *dbmodel.PaymentHistoryEntry)
 *	SUBSCRIPTION FUNCTIONS
 *
 **********************************************************************************************************************************/
+
 // CreateSubscription - testing
 func (sqlDbi *SQLDBI) CreateSubscription(req util.CreateSubscriptionReq) (err error) {
 
@@ -377,7 +382,7 @@ func (sqlDbi *SQLDBI) UpdateSubscription(req util.CreateSubscriptionReq) (err er
 
 }
 
-//DeleteSubscription
+//DeleteSubscription - test
 func (sqlDbi *SQLDBI) DeleteSubscription(subscriptionCode uint32) (err error) {
 	const deleteSubscriptionQry = `DELETE FROM Subscription WHERE SubscriptionCode = ?`
 
@@ -390,7 +395,7 @@ func (sqlDbi *SQLDBI) DeleteSubscription(subscriptionCode uint32) (err error) {
 
 }
 
-//SearchSubscription
+//SearchSubscription - test
 func (sqlDbi *SQLDBI) SearchSubscription(subscriptionCode uint32) (subs []util.SubscrDetails, err error) {
 	const SearchSubscriptionQry = `SELECT ID, ProductID, SubscriptionCode, ProductType FROM Subscription WHERE SubscriptionCode = ?`
 
@@ -515,13 +520,13 @@ func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, err
 	return req, nil
 }
 
-// UpdateAccount
+// UpdateAccount - test
 func (sqlDbi *SQLDBI) UpdateAccount(upDetails *dbmodel.AccountEntry) (err error) {
 
-	const sqlUpdateAccountQry = `INSERT INTO TableName (PID, FirstName, LastName, EmailID, Role) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE PID = VALUES(PID),  FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID), Role = VALUES(Role);`
+	const sqlUpdateAccountQry = `INSERT INTO Account (ID, PID, UserName, FirstName, LastName, EmailID, Role) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ID = VALUES(ID), PID = VALUES(PID),  UserName = VALUES(UserName), FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID), Role = VALUES(Role);`
 
 	args := []interface{}{}
-	args = append(args, upDetails.PID, upDetails.FirstName, upDetails.LastName, upDetails.EmailID, upDetails.Role)
+	args = append(args, upDetails.ID, upDetails.PID, upDetails.UserName, upDetails.FirstName, upDetails.LastName, upDetails.EmailID, upDetails.Role)
 
 	_, err = sqlDbi.db.Exec(sqlUpdateAccountQry, args...)
 
@@ -531,13 +536,13 @@ func (sqlDbi *SQLDBI) UpdateAccount(upDetails *dbmodel.AccountEntry) (err error)
 	return nil
 }
 
-// UpdateMyAccount
+// UpdateMyAccount - test
 func (sqlDbi *SQLDBI) UpdateMyAccount(upmDetails *dbmodel.AccountEntry) (err error) {
 
-	const sqlUpdateAccountQry = `INSERT INTO TableName (PID, FirstName, LastName, EmailID) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE PID = VALUES(PID),  FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID);`
+	const sqlUpdateAccountQry = `INSERT INTO Account (ID, PID, UserName, FirstName, LastName, EmailID) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE ID = VALUES(ID), PID = VALUES(PID),  UserName = VALUES(UserName), FirstName = VALUES(FirstName), LastName = VALUES(LastName), EmailID = VALUES(EmailID);`
 
 	args := []interface{}{}
-	args = append(args, upmDetails.PID, upmDetails.FirstName, upmDetails.LastName, upmDetails.EmailID)
+	args = append(args, upmDetails.ID, upmDetails.PID, upmDetails.UserName, upmDetails.FirstName, upmDetails.LastName, upmDetails.EmailID)
 
 	_, err = sqlDbi.db.Exec(sqlUpdateAccountQry, args...)
 
@@ -547,6 +552,7 @@ func (sqlDbi *SQLDBI) UpdateMyAccount(upmDetails *dbmodel.AccountEntry) (err err
 	return nil
 }
 
+//DeleteAccount - test
 func (sqlDbi *SQLDBI) DeleteAccount(userName string) (err error) {
 	const deleteAccountQry = `DELETE FROM Account WHERE userName = ?`
 
