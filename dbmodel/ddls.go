@@ -78,6 +78,7 @@ var TableCreateSQL = []string{
 		  Description varchar(32) NOT NULL,
 		  URL varchar(100) NOT NULL,
 		  Poster varchar(10) NOT NULL,
+          PRIMARY KEY (URL),
 		  CONSTRAINT MediaType_ibfk_1 FOREIGN KEY (ID) REFERENCES Account (ID) ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;`,
 }

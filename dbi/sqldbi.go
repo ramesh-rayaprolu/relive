@@ -3,7 +3,6 @@ package dbi
 import (
 	"crypto/md5"
 	"database/sql"
-	//	"encoding/json"
 	"fmt"
 	"github.com/msproject/relive/dbmodel"
 	"github.com/msproject/relive/logger"
@@ -639,6 +638,42 @@ func (sqlDbi *SQLDBI) AddMediaType(mtDetails *dbmodel.MediaTypeEntry) (err error
 		return err
 	}
 	return nil
+}
+
+//SearchMediaTypeByID - testing
+func (sqlDbi *SQLDBI) SearchMediaTypeByID(id, pid uint64) ([]dbmodel.MediaTypeEntry, error) {
+	const searchMediaQuery = `SELECT ID, Catalog, FileName, Title, Description, URL, Poster FROM MediaType WHERE ID = ? `
+	var resp []dbmodel.MediaTypeEntry
+
+	query := searchMediaQuery
+	args := []interface{}{}
+
+	args = append(args, id)
+
+	if pid > 0 {
+		query += ` AND PID = ? `
+		args = append(args, pid)
+	}
+
+	rows, err := sqlDbi.db.Query(query, args...)
+	if err != nil {
+		sqlDbi.logObj.PrintError("Failed to Search Media: %s", err.Error())
+		return resp, fmt.Errorf("Failed to Search Media %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var item dbmodel.MediaTypeEntry
+		err := rows.Scan(&item.ID, &item.Catalog, &item.FileName, &item.Title, &item.Description, &item.URL, &item.Poster)
+		if err != nil {
+			sqlDbi.logObj.PrintError("Failed to scan media : %s", err.Error())
+			return resp, fmt.Errorf("Failed to scan media: %v", err)
+		}
+		resp = append(resp, item)
+	}
+
+	return resp, nil
+
 }
 
 //CheckProductTableExists - check if product table exists

@@ -61,6 +61,51 @@ func (api MediaAPI) transcodeMedia(absFileName, fullPath, fileName string) (err 
 	return nil
 }
 
+// /api/media/search
+func handleMediaSearch(api MediaAPI, args []string, w http.ResponseWriter, r *http.Request) error {
+	var id, pid uint64
+	var err error
+	var parsedURLSuffix *url.URL
+	var result []dbmodel.MediaTypeEntry
+
+	URLSuffix := args[0]
+	parsedURLSuffix, err = url.Parse(URLSuffix)
+	params := parsedURLSuffix.Query()
+
+	if len(params["id"]) > 0 {
+		id, err = strconv.ParseUint(params["id"][0], 10, 32)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return fmt.Errorf("invalid customer id specified in request URL")
+		}
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		return fmt.Errorf("required query parameters NOT specified in search request")
+	}
+
+	if len(params["pid"]) > 0 {
+		pid, err = strconv.ParseUint(params["pid"][0], 10, 32)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return fmt.Errorf("invalid parent id specified in request URL")
+		}
+	}
+
+	result, err = api.MediaDBI.SearchMediaTypeByID(id, pid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, err)
+		return err
+	}
+
+	err = writeResponse(result, w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return err
+	}
+	return nil
+}
+
 // /api/media/store
 func handleMediaStore(api MediaAPI, args []string, w http.ResponseWriter, r *http.Request) error {
 
@@ -203,6 +248,14 @@ func init() {
 			regex: regex,
 			re:    regexp.MustCompile(regex),
 			f:     handleMediaStore,
+		},
+	)
+	regex = "/api/media/search\\?([^/]+)$"
+	media = append(media,
+		mediaT{
+			regex: regex,
+			re:    regexp.MustCompile(regex),
+			f:     handleMediaSearch,
 		},
 	)
 }
