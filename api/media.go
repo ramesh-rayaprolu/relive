@@ -25,6 +25,39 @@ type MediaAPI struct {
 	LogObj     *logger.Logger
 }
 
+func (api MediaAPI) generateJPG(absFileName, fullPath, fileName string) (err error) {
+	var ffmpegPath string
+
+	ffmpegPath, err = exec.LookPath("ffmpeg")
+	if err != nil {
+		return fmt.Errorf("error looking up path for ffmpeg :%s", err.Error())
+	}
+
+	jpgFileName := fmt.Sprintf("%s/%s.jpg", fullPath, fileName)
+	cmd := exec.Command(ffmpegPath,
+		"-ss", "00:00:03", "-i", absFileName,
+		"-vframes", "1", "-q:v", "5", jpgFileName)
+
+	err = cmd.Start()
+	if err != nil {
+		return fmt.Errorf("Cannot start command, err: %v", err)
+	}
+
+	if err = cmd.Wait(); err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				api.LogObj.PrintInfo("Exit Status: ", status.ExitStatus())
+				if status.ExitStatus() != 0 {
+					return fmt.Errorf("Exit Status: %d", status.ExitStatus())
+				}
+			}
+		} else {
+			return fmt.Errorf("error in  cmd.Wait: %v", err)
+		}
+	}
+	return nil
+}
+
 func (api MediaAPI) transcodeMedia(absFileName, fullPath, fileName string) (err error) {
 	var ffmpegPath string
 	m3u8FileName := fmt.Sprintf("%s/%s.m3u8", fullPath, fileName)
@@ -32,7 +65,7 @@ func (api MediaAPI) transcodeMedia(absFileName, fullPath, fileName string) (err 
 
 	ffmpegPath, err = exec.LookPath("ffmpeg")
 	if err != nil {
-		fmt.Printf("Error looking up path for ffmpeg :%s\n", err.Error())
+		return fmt.Errorf("Error looking up path for ffmpeg :%s", err.Error())
 	}
 
 	cmd := exec.Command(ffmpegPath,
@@ -50,7 +83,7 @@ func (api MediaAPI) transcodeMedia(absFileName, fullPath, fileName string) (err 
 	if err = cmd.Wait(); err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				fmt.Println("Exit Status: ", status.ExitStatus())
+				api.LogObj.PrintInfo("Exit Status: ", status.ExitStatus())
 				if status.ExitStatus() != 0 {
 					return fmt.Errorf("Exit Status: %d", status.ExitStatus())
 				}
@@ -212,14 +245,24 @@ func handleMediaStore(api MediaAPI, args []string, w http.ResponseWriter, r *htt
 		return fmt.Errorf("Cannot transcode Media file: %v", err)
 	}
 
+	err = api.generateJPG(outfileName, outfilePath, fName)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, err)
+		return fmt.Errorf("Cannot generate jpg from Media file: %v", err)
+	}
+
 	/*update DB only if all of the above succeeds */
 	mediaURL := fmt.Sprintf("http://localhost:9999/api/media/play/%s/%s/%s.m3u8", params["id"][0], fName, fName)
+	jpgURL := fmt.Sprintf("http://localhost:9999/api/media/play/%s/%s/%s.jpg", params["id"][0], fName, fName)
 	mDetails := &dbmodel.MediaTypeEntry{
-		ID:       int(id),
-		Catalog:  catalog,
-		FileName: header.Filename,
-		Title:    title,
-		URL:      mediaURL,
+		ID:          int(id),
+		Catalog:     catalog,
+		FileName:    header.Filename,
+		Title:       title,
+		Description: title,
+		URL:         mediaURL,
+		Poster:      jpgURL,
 	}
 
 	err = api.MediaDBI.AddMediaType(mDetails)

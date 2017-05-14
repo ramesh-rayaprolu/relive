@@ -72,12 +72,12 @@ var TableCreateSQL = []string{
 
 	`CREATE TABLE IF NOT EXISTS MediaType (
 		  ID int(11) NOT NULL,
-		  Catalog varchar(100) NOT NULL,
-		  FileName varchar(100) DEFAULT NULL,
+		  Catalog varchar(256) NOT NULL,
+		  FileName varchar(256) DEFAULT NULL,
 		  Title varchar(100) NOT NULL,
-		  Description varchar(32) NOT NULL,
-		  URL varchar(100) NOT NULL,
-		  Poster varchar(10) NOT NULL,
+		  Description varchar(4096) NOT NULL,
+		  URL varchar(1024) NOT NULL,
+		  Poster varchar(1024) NOT NULL,
           PRIMARY KEY (URL),
 		  CONSTRAINT MediaType_ibfk_1 FOREIGN KEY (ID) REFERENCES Account (ID) ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;`,
