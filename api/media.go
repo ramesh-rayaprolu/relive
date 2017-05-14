@@ -76,6 +76,7 @@ func handleMediaPlayBack(api MediaAPI, args []string, w http.ResponseWriter, r *
 // /api/media/search
 func handleMediaSearch(api MediaAPI, args []string, w http.ResponseWriter, r *http.Request) error {
 	var id, pid uint64
+	var fname string
 	var err error
 	var parsedURLSuffix *url.URL
 	var result []dbmodel.MediaTypeEntry
@@ -103,7 +104,11 @@ func handleMediaSearch(api MediaAPI, args []string, w http.ResponseWriter, r *ht
 		}
 	}
 
-	result, err = api.MediaDBI.SearchMediaTypeByID(id, pid)
+	if len(params["filename"]) > 0 {
+		fname = params["filename"][0]
+	}
+
+	result, err = api.MediaDBI.SearchMediaTypeByID(id, pid, fname)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintln(w, err)

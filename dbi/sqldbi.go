@@ -641,7 +641,7 @@ func (sqlDbi *SQLDBI) AddMediaType(mtDetails *dbmodel.MediaTypeEntry) (err error
 }
 
 //SearchMediaTypeByID - testing
-func (sqlDbi *SQLDBI) SearchMediaTypeByID(id, pid uint64) ([]dbmodel.MediaTypeEntry, error) {
+func (sqlDbi *SQLDBI) SearchMediaTypeByID(id, pid uint64, fname string) ([]dbmodel.MediaTypeEntry, error) {
 	const searchMediaQuery = `SELECT ID, Catalog, FileName, Title, Description, URL, Poster FROM MediaType WHERE ID = ? `
 	var resp []dbmodel.MediaTypeEntry
 
@@ -653,6 +653,11 @@ func (sqlDbi *SQLDBI) SearchMediaTypeByID(id, pid uint64) ([]dbmodel.MediaTypeEn
 	if pid > 0 {
 		query += ` AND PID = ? `
 		args = append(args, pid)
+	}
+
+	if len(fname) > 0 {
+		query += ` AND FileName = ? `
+		args = append(args, fname)
 	}
 
 	rows, err := sqlDbi.db.Query(query, args...)
