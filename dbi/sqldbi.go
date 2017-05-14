@@ -199,7 +199,7 @@ func hashPWDAndSalt(PWD, salt string) string {
 
 //Login - verify user/password from DB
 func (sqlDbi *SQLDBI) Login(userName, PWD string) (*dbmodel.AccountEntry, error) {
-	const LoginQuery = `SELECT UserName, EmailID, FirstName, LastName, Role, PasswdDigest, Salt
+	const LoginQuery = `SELECT ID, PID, UserName, EmailID, FirstName, LastName, Role, PasswdDigest, Salt
 	        FROM Account WHERE UserName = ?`
 
 	var (
@@ -219,6 +219,8 @@ func (sqlDbi *SQLDBI) Login(userName, PWD string) (*dbmodel.AccountEntry, error)
 	var passwordDigest, salt string
 	if rows.Next() {
 		err := rows.Scan(
+			&account.ID,
+			&account.PID,
 			&account.UserName,
 			&account.EmailID,
 			&account.FirstName,
@@ -544,7 +546,7 @@ func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, err
 
 //SearchAndGetAccountIDs - test
 func (sqlDbi *SQLDBI) SearchAndGetAccountIDs(adminID int) ([]util.UserDetails, error) {
-	const SearchAccountQuery = `SELECT UserName, ID FROM Account WHERE PID = ?`
+	const SearchAccountQuery = `SELECT UserName, ID FROM Account WHERE ROLE = 3 AND PID = ?`
 	var resp []util.UserDetails
 
 	query := SearchAccountQuery
