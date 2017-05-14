@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/msproject/relive/dbi"
@@ -58,6 +59,17 @@ func (api MediaAPI) transcodeMedia(absFileName, fullPath, fileName string) (err 
 			return fmt.Errorf("error in  cmd.Wait: %v", err)
 		}
 	}
+	return nil
+}
+
+// /api/media/play
+func handleMediaPlayBack(api MediaAPI, args []string, w http.ResponseWriter, r *http.Request) error {
+
+	fileToPlay := strings.TrimPrefix(args[0], "/api/media/play/")
+	fileToPlay = fmt.Sprintf("/tmp/%s", fileToPlay)
+	api.LogObj.PrintInfo("playing: %s", fileToPlay)
+
+	http.ServeFile(w, r, fileToPlay)
 	return nil
 }
 
@@ -256,6 +268,14 @@ func init() {
 			regex: regex,
 			re:    regexp.MustCompile(regex),
 			f:     handleMediaSearch,
+		},
+	)
+	regex = "/api/media/play/([^/]+)/([^/]+)/([^/]+)$"
+	media = append(media,
+		mediaT{
+			regex: regex,
+			re:    regexp.MustCompile(regex),
+			f:     handleMediaPlayBack,
 		},
 	)
 }

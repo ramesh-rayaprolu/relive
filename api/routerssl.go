@@ -62,10 +62,6 @@ func (r RouterSSL) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	} else if strings.Contains(url, "/payment/") || strings.Contains(url, "/payment?") {
 		r.Payment.ServeHTTP(w, req)
 		return
-	} else if strings.Contains(url, "/api/media/play") {
-		fs := http.FileServer(http.Dir("/tmp"))
-		http.Handle("/api/media/play", http.StripPrefix("/api/media/play", fs))
-		return
 	} else if strings.Contains(url, "/media/") || strings.Contains(url, "/media?") {
 		r.Media.ServeHTTP(w, req)
 		return
