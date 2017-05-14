@@ -6,8 +6,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
+	"syscall"
 
 	"github.com/msproject/relive/dbi"
 	"github.com/msproject/relive/dbmodel"
@@ -19,6 +22,43 @@ type MediaAPI struct {
 	MediaDBI   dbi.MediaTypeTblDBI
 	AccountDBI dbi.AccountTblDBI
 	LogObj     *logger.Logger
+}
+
+func (api MediaAPI) transcodeMedia(absFileName, fullPath, fileName string) (err error) {
+	var ffmpegPath string
+	m3u8FileName := fmt.Sprintf("%s/%s.m3u8", fullPath, fileName)
+	tsFileName := fmt.Sprintf("%s/%s%%d.ts", fullPath, fileName)
+
+	ffmpegPath, err = exec.LookPath("ffmpeg")
+	if err != nil {
+		fmt.Printf("Error looking up path for ffmpeg :%s\n", err.Error())
+	}
+
+	cmd := exec.Command(ffmpegPath,
+		"-y", "-i", absFileName,
+		"-codec", "copy", "-bsf", "h264_mp4toannexb",
+		"-map", "0", "-f", "segment", "-segment_time", "10",
+		"-segment_format", "mpegts", "-segment_list", m3u8FileName,
+		"-segment_list_type", "m3u8", tsFileName)
+
+	err = cmd.Start()
+	if err != nil {
+		return fmt.Errorf("Cannot start command, err: %v", err)
+	}
+
+	if err = cmd.Wait(); err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				fmt.Println("Exit Status: ", status.ExitStatus())
+				if status.ExitStatus() != 0 {
+					return fmt.Errorf("Exit Status: %d", status.ExitStatus())
+				}
+			}
+		} else {
+			return fmt.Errorf("error in  cmd.Wait: %v", err)
+		}
+	}
+	return nil
 }
 
 // /api/media/store
@@ -74,7 +114,18 @@ func handleMediaStore(api MediaAPI, args []string, w http.ResponseWriter, r *htt
 
 	defer file.Close()
 
-	outfileName := "/tmp/" + header.Filename
+	fExt := filepath.Ext(header.Filename)
+	fName := header.Filename[0 : len(header.Filename)-len(fExt)]
+
+	outfilePath := fmt.Sprintf("/tmp/%s/%s", params["id"][0], fName)
+	err = os.MkdirAll(outfilePath, os.ModePerm)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, err)
+		return err
+	}
+
+	outfileName := fmt.Sprintf("%s/%s", outfilePath, header.Filename)
 	out, err := os.Create(outfileName)
 	if err != nil {
 		fmt.Fprintf(w, "Unable to create the file for writing. Check your write access privilege")
@@ -91,7 +142,16 @@ func handleMediaStore(api MediaAPI, args []string, w http.ResponseWriter, r *htt
 		return fmt.Errorf("Cannot upload requested Object: %v", err)
 	}
 
-	mediaURL := "http://localhost:9999/api/media/play/" + header.Filename + ".m3u8"
+	//file upload complete. transcode the file for smooth playback.
+	err = api.transcodeMedia(outfileName, outfilePath, fName)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, err)
+		return fmt.Errorf("Cannot transcode Media file: %v", err)
+	}
+
+	/*update DB only if all of the above succeeds */
+	mediaURL := fmt.Sprintf("http://localhost:9999/api/media/play/%s/%s/%s.m3u8", params["id"][0], fName, fName)
 	mDetails := &dbmodel.MediaTypeEntry{
 		ID:       int(id),
 		Catalog:  catalog,
