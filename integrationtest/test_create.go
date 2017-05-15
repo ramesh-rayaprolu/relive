@@ -59,3 +59,19 @@ func testCreateAccount() error {
 
 	return nil
 }
+
+func testCreateAccountAdmin() error {
+	return nil
+}
+
+func testCreateAccountCustomer() error {
+	return nil
+}
+
+func testCreateSubscription() error {
+	return nil
+}
+
+func testUploadMedia() error {
+	return nil
+}

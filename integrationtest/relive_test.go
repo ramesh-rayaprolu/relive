@@ -93,9 +93,33 @@ func TestRelive(t *testing.T) {
 						},
 					},
 					&testtools.GoFunc{
-						Name: "Test Create Account",
+						Name: "Test Create Account Partner",
 						Func: func(w *testtools.GoFunc) {
 							w.Err = testCreateAccount()
+						},
+					},
+					&testtools.GoFunc{
+						Name: "Test Create Account Admin",
+						Func: func(w *testtools.GoFunc) {
+							w.Err = testCreateAccountAdmin()
+						},
+					},
+					&testtools.GoFunc{
+						Name: "Test Create Account Customer",
+						Func: func(w *testtools.GoFunc) {
+							w.Err = testCreateAccountCustomer()
+						},
+					},
+					&testtools.GoFunc{
+						Name: "Test Create Subscription",
+						Func: func(w *testtools.GoFunc) {
+							w.Err = testCreateSubscription()
+						},
+					},
+					&testtools.GoFunc{
+						Name: "Test Upload Media",
+						Func: func(w *testtools.GoFunc) {
+							w.Err = testUploadMedia()
 						},
 					},
 				},
