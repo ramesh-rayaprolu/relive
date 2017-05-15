@@ -101,7 +101,7 @@ func handleAccountsSearch(api AccountsAPI, args []string, w http.ResponseWriter,
 }
 
 func handleAdminAccountsSearch(api AccountsAPI, args []string, w http.ResponseWriter, r *http.Request) error {
-	var id uint64
+	var id, role uint64
 	var err error
 	var parsedURLSuffix *url.URL
 	var resp []util.UserDetails
@@ -127,7 +127,18 @@ func handleAdminAccountsSearch(api AccountsAPI, args []string, w http.ResponseWr
 		return fmt.Errorf("required query parameters NOT specified in search request")
 	}
 
-	resp, err = api.AccountDBI.SearchAndGetAccountIDs(int(id))
+	if len(params["role"]) > 0 {
+		role, err = strconv.ParseUint(params["role"][0], 10, 32)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return fmt.Errorf("invalid admin id specified in request URL")
+		}
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		return fmt.Errorf("required query parameters NOT specified in search request")
+	}
+
+	resp, err = api.AccountDBI.SearchAndGetAccountIDs(int(id), int(role))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
@@ -347,7 +358,7 @@ func init() {
 			f:     handleAccountsSearch,
 		},
 	)
-	regex = "/api/accounts/search\\?id=([^/]+)$"
+	regex = "/api/accounts/search\\?id=([^/]+)&role=([^/]+)$"
 	account = append(account,
 		accountT{
 			regex: regex,

@@ -30,7 +30,7 @@ type AccountTblDBI interface {
 	UpdateMyAccount(upDetails *dbmodel.AccountEntry) error
 
 	// SearchAndGetAccountIDs - test
-	SearchAndGetAccountIDs(adminID int) ([]util.UserDetails, error)
+	SearchAndGetAccountIDs(adminID int, role int) ([]util.UserDetails, error)
 
 	// AddAccounts - testing
 	AddAccounts(acDetails *dbmodel.AccountEntry) error

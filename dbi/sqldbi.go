@@ -544,14 +544,12 @@ func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, err
 }
 
 //SearchAndGetAccountIDs - test
-func (sqlDbi *SQLDBI) SearchAndGetAccountIDs(adminID int) ([]util.UserDetails, error) {
-	const SearchAccountQuery = `SELECT UserName, ID FROM Account WHERE ROLE = 3 AND PID = ?`
+func (sqlDbi *SQLDBI) SearchAndGetAccountIDs(adminID int, role int) ([]util.UserDetails, error) {
+	const SearchAccountQuery = `SELECT UserName, ID FROM Account WHERE ROLE = ? AND PID = ?`
 	var userList []util.UserDetails
 
 	query := SearchAccountQuery
-	args := []interface{}{}
-
-	args = append(args, adminID)
+	args := []interface{}{role, adminID}
 
 	rows, err := sqlDbi.db.Query(query, args...)
 	if err != nil {
