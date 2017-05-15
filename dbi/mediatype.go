@@ -10,4 +10,6 @@ type MediaTypeTblDBI interface {
 	AddMediaType(mtDetails *dbmodel.MediaTypeEntry) error
 	// SearchMediaTypeByID - testing
 	SearchMediaTypeByID(id, pid uint64, fname string) ([]dbmodel.MediaTypeEntry, error)
+	//GetMediaCount - test
+	GetMediaCount(id int) (int, error)
 }

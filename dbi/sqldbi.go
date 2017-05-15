@@ -546,7 +546,7 @@ func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, err
 //SearchAndGetAccountIDs - test
 func (sqlDbi *SQLDBI) SearchAndGetAccountIDs(adminID int) ([]util.UserDetails, error) {
 	const SearchAccountQuery = `SELECT UserName, ID FROM Account WHERE ROLE = 3 AND PID = ?`
-	var resp []util.UserDetails
+	var userList []util.UserDetails
 
 	query := SearchAccountQuery
 	args := []interface{}{}
@@ -556,7 +556,7 @@ func (sqlDbi *SQLDBI) SearchAndGetAccountIDs(adminID int) ([]util.UserDetails, e
 	rows, err := sqlDbi.db.Query(query, args...)
 	if err != nil {
 		sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
-		return resp, fmt.Errorf("Failed to Search the account %v", err)
+		return nil, fmt.Errorf("Failed to Search the account %v", err)
 	}
 
 	defer rows.Close()
@@ -565,12 +565,21 @@ func (sqlDbi *SQLDBI) SearchAndGetAccountIDs(adminID int) ([]util.UserDetails, e
 		err := rows.Scan(&item.UserName, &item.ID)
 		if err != nil {
 			sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
-			return resp, fmt.Errorf("Failed to Search the account %v", err)
+			return nil, fmt.Errorf("Failed to Search the account %v", err)
 		}
-		resp = append(resp, item)
+		userList = append(userList, item)
 	}
 
-	return resp, nil
+	for i, userDet := range userList {
+		count, err := sqlDbi.GetMediaCount(userDet.ID)
+		if err != nil {
+			sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
+			return nil, fmt.Errorf("Failed to Search the account %v", err)
+		}
+		userList[i].MediaCount = count
+	}
+
+	return userList, nil
 }
 
 // UpdateAccount - test
@@ -679,6 +688,33 @@ func (sqlDbi *SQLDBI) SearchMediaTypeByID(id, pid uint64, fname string) ([]dbmod
 
 	return resp, nil
 
+}
+
+//GetMediaCount - test
+func (sqlDbi *SQLDBI) GetMediaCount(id int) (int, error) {
+	const getMediaCntQuery = "Select COUNT(*) as count from MediaType where ID = ?"
+	var (
+		rows  *sql.Rows
+		err   error
+		count int
+	)
+
+	rows, err = sqlDbi.db.Query(getMediaCntQuery, id)
+	if err != nil {
+		sqlDbi.logObj.PrintError("Failed querying mediatype %v", err)
+		return 0, fmt.Errorf("Failed querying mediatype %v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			sqlDbi.logObj.PrintError("Failed scanning mediatype %v", err)
+			return 0, fmt.Errorf("Failed querying mediatype %v", err)
+		}
+	}
+
+	return count, nil
 }
 
 //CheckProductTableExists - check if product table exists

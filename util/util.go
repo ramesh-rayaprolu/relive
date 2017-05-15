@@ -51,8 +51,9 @@ type SearchAccountReq struct {
 
 //UserDetails - return admins user list
 type UserDetails struct {
-	UserName string
-	ID       int
+	UserName   string
+	ID         int
+	MediaCount int
 }
 
 // SubscrDetails struct
