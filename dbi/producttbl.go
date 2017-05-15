@@ -1,7 +1,7 @@
 package dbi
 
 import (
-	//"github.com/msproject/relive/dbmodel"
+	"github.com/msproject/relive/dbmodel"
 	"github.com/msproject/relive/util"
 )
 
@@ -13,4 +13,7 @@ type ProductTblDBI interface {
 
 	// CreateProduct - create product
 	CreateProduct(req []util.CreateProductReq) error
+
+	// GetAllProducts - get all products
+	GetAllProducts() ([]dbmodel.ProductEntry, error)
 }

@@ -1,13 +1,12 @@
 package api
 
 import (
-	//"encoding/json"
 	"fmt"
-	//"net/http"
-	//"net/url"
-	//"regexp"
+	"net/http"
+	"regexp"
 
 	"github.com/msproject/relive/dbi"
+	"github.com/msproject/relive/dbmodel"
 	"github.com/msproject/relive/logger"
 	"github.com/msproject/relive/util"
 )
@@ -59,4 +58,64 @@ func InitProductsDB(sqlDBI dbi.DBI) (err error) {
 		return err
 	}
 	return nil
+}
+
+func handleListProducts(api ProductsAPI, args []string, w http.ResponseWriter, r *http.Request) (err error) {
+
+	var resp []dbmodel.ProductEntry
+
+	if r.Method != "GET" {
+		w.Header().Set("Allow", "GET")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return fmt.Errorf("Incorrect Method used for API /api/accounts/Search")
+	}
+
+	resp, err = api.ProductDBI.GetAllProducts()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+
+	err = writeResponse(resp, w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return err
+	}
+
+	return nil
+}
+
+type productT struct {
+	regex string
+	re    *regexp.Regexp
+	f     func(api ProductsAPI, args []string, w http.ResponseWriter, r *http.Request) error
+}
+
+var product []productT
+
+func (api ProductsAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	for _, d := range product {
+		if d.re.MatchString(r.URL.String()) {
+			err := d.f(api, d.re.FindStringSubmatch(r.URL.String()), w, r)
+			if err != nil {
+				returnMessage := fmt.Sprintf("%v", err)
+				w.Write([]byte(returnMessage))
+			}
+			return
+		}
+	}
+	w.WriteHeader(http.StatusBadRequest)
+	w.Write([]byte("No match found.\n"))
+}
+
+func init() {
+	var regex string
+	regex = "/api/products/list$"
+	product = append(product,
+		productT{
+			regex: regex,
+			re:    regexp.MustCompile(regex),
+			f:     handleListProducts,
+		},
+	)
 }

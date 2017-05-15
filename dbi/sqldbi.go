@@ -779,3 +779,31 @@ func (sqlDbi *SQLDBI) CreateProduct(req []util.CreateProductReq) error {
 
 	return nil
 }
+
+//GetAllProducts - get all products
+func (sqlDbi *SQLDBI) GetAllProducts() ([]dbmodel.ProductEntry, error) {
+	const getProductsQuery = `SELECT ProductID, ProductType, StoreSize, Duration, Amount FROM Product `
+	var productList []dbmodel.ProductEntry
+
+	args := []interface{}{}
+
+	rows, err := sqlDbi.db.Query(getProductsQuery, args...)
+	if err != nil {
+		sqlDbi.logObj.PrintError("Failed to Search products: %s", err.Error())
+		return nil, fmt.Errorf("Failed to Search products %v", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var item dbmodel.ProductEntry
+		err := rows.Scan(&item.ProductID, &item.ProductType, &item.StoreSize, &item.Duration, &item.Amount)
+		if err != nil {
+			sqlDbi.logObj.PrintError("Failed to Search products: %s", err.Error())
+			return nil, fmt.Errorf("Failed to Search products %v", err)
+		}
+		productList = append(productList, item)
+	}
+
+	return productList, nil
+
+}

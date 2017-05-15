@@ -14,6 +14,7 @@ type Router struct {
 	Subscription http.Handler
 	Payment      http.Handler
 	Media        http.Handler
+	Product      http.Handler
 	AccountDBI   dbi.AccountTblDBI
 	LogObj       *logger.Logger
 }
@@ -50,6 +51,9 @@ func (r Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	} else if strings.Contains(url, "/media/") || strings.Contains(url, "/media?") {
 		r.Media.ServeHTTP(w, req)
+		return
+	} else if strings.Contains(url, "/products/") || strings.Contains(url, "/products?") {
+		r.Product.ServeHTTP(w, req)
 		return
 	}
 

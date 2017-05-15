@@ -15,6 +15,7 @@ type RouterSSL struct {
 	Subscription http.Handler
 	Payment      http.Handler
 	Media        http.Handler
+	Product      http.Handler
 	AccountsDBI  dbi.AccountTblDBI
 	ProductsDBI  dbi.ProductTblDBI
 	LogObj       *logger.Logger

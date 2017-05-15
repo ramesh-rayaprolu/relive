@@ -65,11 +65,10 @@ func main() {
 		LogObj:          logObj,
 	}
 
-	/*productAPI := api.ProductsAPI{
+	productAPI := api.ProductsAPI{
 		ProductDBI: sqlDbi.ProductDBI,
-		//SubscriptionDBI: sqlDbi.SubscriptionDBI,
-		LogObj: logObj,
-	}*/
+		LogObj:     logObj,
+	}
 
 	subscriptionAPI := api.SubscriptionAPI{
 		SubscriptionDBI:        sqlDbi.SubscriptionDBI,
@@ -93,6 +92,7 @@ func main() {
 		Subscription: subscriptionAPI,
 		Payment:      paymentAPI,
 		Media:        mediaAPI,
+		Product:      productAPI,
 		AccountDBI:   sqlDbi.AccountDBI,
 		LogObj:       logObj,
 	}
@@ -102,6 +102,7 @@ func main() {
 		Subscription: subscriptionAPI,
 		Payment:      paymentAPI,
 		Media:        mediaAPI,
+		Product:      productAPI,
 		LogObj:       logObj,
 	}
 
