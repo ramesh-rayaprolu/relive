@@ -2,13 +2,14 @@ package util
 
 // CreateAccountReq - used to create account
 type CreateAccountReq struct {
-	UserName  string
-	Email     string
-	FirstName string
-	LastName  string
-	PWD       string
-	CompanyID uint32 `json:"PID,omitempty"`
-	Role      uint32 `json:"Role,omitempty"`
+	UserName    string `json:"Username"`
+	Email       string `json:"Email"`
+	FirstName   string `json:"FirstName"`
+	LastName    string `json:"LastName,omitempty"`
+	CompanyName string `json:"CompanyName,omitempty"`
+	PWD         string `json:"Password"`
+	CompanyID   uint32 `json:"PID"`
+	Role        uint32 `json:"Role"`
 }
 
 // CreateProductReq - used to create product

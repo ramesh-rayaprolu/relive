@@ -159,7 +159,7 @@ func handleAccountsCreate(api AccountsAPI, args []string, w http.ResponseWriter,
 
 	if req.Email == "" || req.UserName == "" || req.LastName == "" || req.FirstName == "" || req.PWD == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		return fmt.Errorf("required parameters NOT specified in search request")
+		return fmt.Errorf("required parameters NOT specified in create request")
 	}
 
 	exists, err1 := api.AccountDBI.CheckAccountExists(req.UserName)

@@ -134,7 +134,7 @@ func (sqlDbi *SQLDBI) CheckAccountTableExists() (bool, error) {
 // CreateAccount - function to create an account row.
 //                 Duplicate rows are not allowed and will throw error
 func (sqlDbi *SQLDBI) CreateAccount(req util.CreateAccountReq) error {
-	const createAccountQuery = `INSERT INTO Account (PID, UserName, FirstName, LastName, EmailID, PasswdDigest, Salt, Role) VALUES `
+	const createAccountQuery = `INSERT INTO Account (PID, UserName, FirstName, LastName, CompanyName, EmailID, PasswdDigest, Salt, Role) VALUES `
 	var err error
 
 	// Get passwordDigest and salt here
@@ -145,7 +145,7 @@ func (sqlDbi *SQLDBI) CreateAccount(req util.CreateAccountReq) error {
 
 	query += "(?, ?, ?, ?, ?, ?, ?, ?)"
 
-	args = append(args, req.CompanyID, req.UserName, req.FirstName, req.LastName, req.Email, passwordDigest, salt, req.Role)
+	args = append(args, req.CompanyID, req.UserName, req.FirstName, req.LastName, req.CompanyName, req.Email, passwordDigest, salt, req.Role)
 
 	_, err = sqlDbi.db.Exec(query, args...)
 	if err != nil {
