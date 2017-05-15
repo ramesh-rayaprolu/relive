@@ -571,15 +571,49 @@ func (sqlDbi *SQLDBI) SearchAndGetAccountIDs(adminID int) ([]util.UserDetails, e
 	}
 
 	for i, userDet := range userList {
-		count, err := sqlDbi.GetMediaCount(userDet.ID)
+		mCount, err := sqlDbi.GetMediaCount(userDet.ID)
 		if err != nil {
 			sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
 			return nil, fmt.Errorf("Failed to Search the account %v", err)
 		}
-		userList[i].MediaCount = count
+		userList[i].MediaCount = mCount
+
+		cCount, err := sqlDbi.GetCustomerCount(userDet.ID)
+		if err != nil {
+			sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
+			return nil, fmt.Errorf("Failed to Search the account %v", err)
+		}
+		userList[i].CustomerCount = cCount
 	}
 
 	return userList, nil
+}
+
+//GetCustomerCount - test
+func (sqlDbi *SQLDBI) GetCustomerCount(id int) (int, error) {
+	const getMediaCntQuery = "Select COUNT(*) as count from Account where PID = ?"
+	var (
+		rows  *sql.Rows
+		err   error
+		count int
+	)
+
+	rows, err = sqlDbi.db.Query(getMediaCntQuery, id)
+	if err != nil {
+		sqlDbi.logObj.PrintError("Failed querying account count %v", err)
+		return 0, fmt.Errorf("Failed querying account count %v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			sqlDbi.logObj.PrintError("Failed scanning account count %v", err)
+			return 0, fmt.Errorf("Failed querying account count %v", err)
+		}
+	}
+
+	return count, nil
 }
 
 // UpdateAccount - test
