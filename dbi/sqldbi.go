@@ -143,7 +143,7 @@ func (sqlDbi *SQLDBI) CreateAccount(req util.CreateAccountReq) error {
 	query := createAccountQuery
 	args := []interface{}{}
 
-	query += "(?, ?, ?, ?, ?, ?, ?, ?)"
+	query += "(?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 	args = append(args, req.CompanyID, req.UserName, req.FirstName, req.LastName, req.CompanyName, req.Email, passwordDigest, salt, req.Role)
 
