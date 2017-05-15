@@ -2,12 +2,12 @@ package util
 
 // CreateAccountReq - used to create account
 type CreateAccountReq struct {
-	UserName    string `json:"Username"`
+	UserName    string `json:"UserName"`
 	Email       string `json:"Email"`
 	FirstName   string `json:"FirstName"`
 	LastName    string `json:"LastName,omitempty"`
 	CompanyName string `json:"CompanyName,omitempty"`
-	PWD         string `json:"Password"`
+	PWD         string `json:"PWD"`
 	CompanyID   uint32 `json:"PID"`
 	Role        uint32 `json:"Role"`
 }
