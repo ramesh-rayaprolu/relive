@@ -508,7 +508,7 @@ func (sqlDbi *SQLDBI) AddProduct(prDetails *dbmodel.ProductEntry) (err error) {
 // SearchAccount - function to Search an account row.
 //                 Duplicate rows are not allowed and will throw error
 func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, error) {
-	const SearchAccountQuery = `SELECT UserName, EmailID, FirstName, LastName, Role FROM Account WHERE UserName = ?`
+	const SearchAccountQuery = `SELECT ID, UserName, EmailID, FirstName, LastName, Role FROM Account WHERE UserName = ?`
 	var req util.SearchAccountReq
 
 	// Get passwordDigest and salt here
@@ -532,7 +532,7 @@ func (sqlDbi *SQLDBI) SearchAccount(UserName string) (util.SearchAccountReq, err
 			sqlDbi.logObj.PrintError("Found more than one entry for user: %s", UserName)
 			return req, fmt.Errorf("Found more than one entry for user: %s", UserName)
 		}
-		err := rows.Scan(&req.UserName, &req.Email, &req.FirstName, &req.LastName, &req.Role)
+		err := rows.Scan(&req.ID, &req.UserName, &req.Email, &req.FirstName, &req.LastName, &req.Role)
 		if err != nil {
 			sqlDbi.logObj.PrintError("Failed to Search account: %s", err.Error())
 			return req, fmt.Errorf("Failed to Search the account %v", err)

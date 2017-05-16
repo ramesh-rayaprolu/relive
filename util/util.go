@@ -41,6 +41,7 @@ type CreateSubscriptionReq struct {
 
 // SearchAccountReq - used to Search account
 type SearchAccountReq struct {
+	ID        uint32
 	UserName  string
 	Email     string
 	FirstName string
